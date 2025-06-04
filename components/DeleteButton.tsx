@@ -1,6 +1,6 @@
 function DeleteButton() {
   return (
-    <button>I'm a button</button>
+    <button>I&#39;m a button</button>
   )
 }
 
