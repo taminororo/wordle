@@ -1,8 +1,8 @@
-function AlphabetButton() {
+function AlphabetButton({ label }: { label:string}) {
   return (
-    <div className="p-2.5 bg-stone-300 rounded-sm inline-flex flex-col justify-center items-center gap-2.5">
+    <div className="p-2.5 bg-stone-300 rounded-sm inline-flex flex-col justify-center items-center">
         <button className="text-black text-base font-normal font-sans">
-            Q
+            {label}
         </button>
     </div>
   )
