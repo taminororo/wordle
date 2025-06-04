@@ -6,7 +6,7 @@ export default function MyApp() {
   return (
     <div>
       
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-4">
           <div className="grid grid-flow-col auto-cols-max gap-2">
             <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
             <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
