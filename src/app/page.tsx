@@ -12,6 +12,10 @@ export default function MyApp() {
       <h1>アルファベット</h1>
       {/*<div className="grid grid-cols-2 gap-2.5">*/}
       {/*<div className="grid grid-cols-2 gap-8">*/}
+      <div>
+        <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+      </div>
+      
       <div className="flex justify-center">
           <div className="grid grid-flow-col auto-cols-max gap-2 mb-4">
             <AlphabetButton label="Q"/>
