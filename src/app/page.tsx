@@ -5,16 +5,7 @@ import Button from '../../components/Button';
 export default function MyApp() {
   return (
     <div>
-      <h1>Welcome to my app</h1>
-      <Button />
-      <App /> {/* 呼び出せば、Appコンポーネントも表示されます */}
       
-      <h1>アルファベット</h1>
-      {/*<div className="grid grid-cols-2 gap-2.5">*/}
-      {/*<div className="grid grid-cols-2 gap-8">*/}
-      <div>
-        <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
-      </div>
       <div className="flex justify-center">
           <div className="grid grid-flow-col auto-cols-max gap-2">
             <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
@@ -111,14 +102,5 @@ export default function MyApp() {
       {/*</div>*/}
     </div>
     
-  );
-}
-
-export function App() {
-  return (
-    <div>
-      <h1>Welcome to my app</h1>
-      <Button />
-    </div>
   );
 }
