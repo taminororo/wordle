@@ -15,7 +15,60 @@ export default function MyApp() {
       <div>
         <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
       </div>
-      
+      <div className="flex justify-center">
+          <div className="grid grid-flow-col auto-cols-max gap-2">
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+          </div>
+      </div>
+      <div className="flex justify-center">
+          <div className="grid grid-flow-col auto-cols-max gap-2">
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+          </div>
+      </div>
+      <div className="flex justify-center">
+          <div className="grid grid-flow-col auto-cols-max gap-2">
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+          </div>
+      </div>
+      <div className="flex justify-center">
+          <div className="grid grid-flow-col auto-cols-max gap-2">
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+          </div>
+      </div>
+      <div className="flex justify-center">
+          <div className="grid grid-flow-col auto-cols-max gap-2">
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+          </div>
+      </div>
+      <div className="flex justify-center">
+          <div className="grid grid-flow-col auto-cols-max gap-2">
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+          </div>
+      </div>
       <div className="flex justify-center">
           <div className="grid grid-flow-col auto-cols-max gap-2 mb-4">
             <AlphabetButton label="Q"/>
