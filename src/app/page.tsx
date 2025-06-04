@@ -99,7 +99,9 @@ export default function MyApp() {
             <AlphabetButton label="M"/>
           </div>
       </div>
-      {/*</div>*/}
+      <div className="flex justify-center mt-4">
+          <Button label="スタートに戻る"/>
+      </div>
     </div>
     
   );
