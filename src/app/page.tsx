@@ -40,10 +40,17 @@ export default function MyApp() {
           </div>
       </div>
       
-      
-     
-
-
+      <div className="flex justify-center">
+          <div className="grid grid-flow-col auto-cols-max gap-2">
+            <AlphabetButton label="Z"/>
+            <AlphabetButton label="X"/>
+            <AlphabetButton label="C"/>
+            <AlphabetButton label="V"/>
+            <AlphabetButton label="B"/>
+            <AlphabetButton label="N"/>
+            <AlphabetButton label="M"/>
+          </div>
+      </div>
       {/*</div>*/}
     </div>
     
