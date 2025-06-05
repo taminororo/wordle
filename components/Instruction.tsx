@@ -1,9 +1,9 @@
-function Instructon() {
+function MyButton({ label }: { label: string }) {
   return (
-    <button>
-        I&#39;m a button
+    <button className="bg-blue-500 text-white font-bold py-2 px-4 rounded">
+         {label}
     </button>
   )
 }
 
-export default Instructon
+export default MyButton

@@ -1,18 +1,28 @@
 import AlphabetButton from '../../components/AlphabetButton';
-import Button from '../../components/Button';
-
+import InstructionButton from '../../components/Instruction';
+import Button from '../../components/TestButton'
 
 export default function MyApp() {
   return (
     <div>
+      <h1>テスト</h1>
+      <div>
+        <input type="text" maxLength={10} className="border border-gray-300 rounded p-2 mb-4 w-100"/>
+      </div>
+      <div>
+        <main className="p-8">
+          <h1 className="text-xl mb-4">テストページ</h1>
+          <Button />
+        </main>
+      </div>  
       
       <div className="flex justify-center mt-4">
           <div className="grid grid-flow-col auto-cols-max gap-2">
-            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
-            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
-            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
-            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
-            <input type="text" className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" maxLength={10} className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" maxLength={10} className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" maxLength={10} className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" maxLength={10} className="border border-gray-300 rounded p-2 mb-4 w-10"/>
+            <input type="text" maxLength={10} className="border border-gray-300 rounded p-2 mb-4 w-10"/>
           </div>
       </div>
       <div className="flex justify-center">
@@ -100,7 +110,7 @@ export default function MyApp() {
           </div>
       </div>
       <div className="flex justify-center mt-4">
-          <Button label="スタートに戻る"/>
+          <InstructionButton label="スタートに戻る"/>
       </div>
     </div>
     
