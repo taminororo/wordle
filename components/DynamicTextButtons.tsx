@@ -6,11 +6,23 @@ import AlphabetButton from './AlphabetButtons';
 const NUMBER_OF_TEXTBOXES = 5;
 const TARGET_WORD = 'REACT'; //　判定したい特定の文字列を定義
 
+// 各テキストボックスのデータを表現する型定義
+type TextBoxItem = {
+    id: number; // 各テキストボックスに一意のID
+    text: string; // 表示する文字列
+}
+
 export default function DynamicTextButtons() {
     // テキストボックスに表示する文字列を管理するstate
-    const [displayedTexts, setDisplayedTexts] = useState<string[]>(
-        Array(NUMBER_OF_TEXTBOXES).fill( 'ここにはボタンのラベルが表示')
-    )
+    //初期化関数を定義して、ユニークなIDを持つ配列を生成
+    const initializeTextBoxes = (): TextBoxItem[] => {
+    return Array.from({ length: NUMBER_OF_TEXTBOXES }, (_, i) => ({
+        id: Date.now() + i, // ユニークなIDを生成
+        text: '' // 初期値はから文字列
+    }));
+    }
+
+    const [displayedTexts, setDisplayedTexts] = useState<TextBoxItem[]>(initializeTextBoxes);
 
     //　判定結果メッセージを管理するstate
     const [resultMessage, setResultMessage] = useState('');
@@ -18,6 +30,7 @@ export default function DynamicTextButtons() {
     //AlphabetButtonsがクリックされたときに呼び出されるハンドラ
     // クリックされたボタンのラベルを受け取り、それをdisplayedTextに設定
     const handleButtonClick = (buttonLabel: string) => {
+        setResultMessage(''); // ボタンが押されうたびに判定メッセージをリセット
         setDisplayedTexts(prevTexts => {
             const newTexts = [...prevTexts]; //　現在の配列をコピー
             let updated = false;
@@ -25,8 +38,8 @@ export default function DynamicTextButtons() {
             //　既存のテキストボックスの中から、まだ何も表示されていない場所を探す
             for (let i = 0; i < newTexts.length + 1; i++) {
                 // 初期メッセージ（'ここにはボタンのラベルが表示'）も「空」とみなす
-                if (newTexts[i]  == 'ここにはボタンのラベルが表示') {
-                    newTexts[i] = `「 ${buttonLabel}」が押されました`;
+                if (newTexts[i].text  == '') {
+                    newTexts[i] = { ...newTexts[i], text: `「 ${buttonLabel}」が押されました` };
                     updated = true;
                     break; //　見つかったらループを抜ける
                 }
@@ -36,6 +49,7 @@ export default function DynamicTextButtons() {
                 if (!updated) {
                     //newTexts.push(`「${buttonLabel}」が押されました`);
                     //alert( '全てのテキストボックスが埋まりました!');
+                    //newTexts[0] = { ...newTexts[0], text: `「${buttonLabel}」が上書きされました！` }; // 最初のボックスを上書き
                 }
                 return newTexts;
         });
@@ -45,7 +59,7 @@ export default function DynamicTextButtons() {
     const handleEnterClick = () => {
         console.log('Enterボタンがクリックされました！'); // まずはここを確認
         // 全てのテキストボックスが埋まっているか確認
-        const allFilled = displayedTexts.every(text => text !== '');
+        const allFilled = displayedTexts.every(item => item.text !== '');
         console.log('全てのテキストボックスが埋まっているか:', allFilled);
 
         if (!allFilled) {
@@ -55,10 +69,10 @@ export default function DynamicTextButtons() {
 
         // テキストボックスの文字列を結合（例: 「T」が入力されました -> T）
         // 各テキストの最初の文字（引用符とスペースを除く）を抽出して結合
-        const extractedLetters = displayedTexts.map(text => {
+        const extractedLetters = displayedTexts.map(item => {
             // 例: 「T」が入力されました → T
             // 正規表現を修正: 「 の後のスペースを \s* で許容し、「が押されました」に合わせる
-            const match = text.match(/「\s*(.)」が押されました/);
+            const match = item.text.match(/「\s*(.)」が押されました/);
             return match ? match[1] : ''; // マッチすれば2番目のグループ(1文字目)を返す
         }).join('')// 結合して1つの文字列にする)
         console.log('抽出された文字:', extractedLetters);
@@ -77,7 +91,7 @@ export default function DynamicTextButtons() {
         // ここでdisplayedTextsの各要素を新しい空文字列で埋め直す
         // これにより、Reactが要素を再レンダリングするのを促す
         //setDisplayedTexts(Array(NUMBER_OF_TEXTBOXES).fill('')); // 全てのテキストボックスを空にする
-        setDisplayedTexts(prevTexts => prevTexts.map(() => '')); //ここ修正
+        setDisplayedTexts(initializeTextBoxes()); //ここ修正
         setResultMessage(''); //結果メッセージもリセット
     }
 
@@ -90,9 +104,9 @@ export default function DynamicTextButtons() {
             {/* 複数のテキストボックス表示エリア　*/}
             {/* <div className="flex justify-center"> */}
                 <div className="grid grid-flow-col auto-cols-max gap-3 mb-5 mx-auto max-w-full">
-                {displayedTexts.map((text, index) => (
+                {displayedTexts.map((item) => (
                     <div
-                        key={index} // Reactのリストレンダリングにはkeyが必要
+                        key={item.id} // Reactのリストレンダリングにはkeyが必要
                         className="
                             border border-blue-500 p-4 min-h-20 bg-blue-700 text-white
                             rounded-md flex items-center justify-center text-xl font-bold
@@ -103,7 +117,7 @@ export default function DynamicTextButtons() {
                         // Gridのgapでマージンは管理されるため、個別のスタイルは不要
                     >
                          {/* テキストが空の場合に初期メッセージを表示 */}
-                         {text === '' ? 'ここにはボタンのラベルが表示' : text}
+                         {item.text === '' ? 'ここにはボタンのラベルが表示' : item.text}
                     </div>
                 ))}
                 </div>
