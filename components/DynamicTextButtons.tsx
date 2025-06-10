@@ -29,13 +29,50 @@ export default function DynamicTextButtons() {
             </div>
 
             {/* AlphabetButtonのグループ　*/}
-            <div className="flex justify-center gap-2 flex-wrap">
-                <AlphabetButton label="A" onButtonClick={handleButtonClick} />
-                <AlphabetButton label="B" onButtonClick={handleButtonClick} />
-                <AlphabetButton label="C" onButtonClick={handleButtonClick} />
-                <AlphabetButton label="D" onButtonClick={handleButtonClick} />
-                <AlphabetButton label="E" onButtonClick={handleButtonClick} />
+            <div className="flex justify-center">
+                <div className="flex justify-center gap-2 flex-wrap mb-4">
+                    <AlphabetButton label="Q" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="W" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="E" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="D" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="R" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="T" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="Y" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="U" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="I" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="O" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="P" onButtonClick={handleButtonClick} />
+                </div>
             </div>
-        </div>
+            
+            <div className="flex justify-center">
+                <div className="flex justify-center gap-2 flex-wrap mb-4">
+                    <AlphabetButton label="A" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="S" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="D" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="F" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="G" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="H" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="J" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="K" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="L" onButtonClick={handleButtonClick} />
+                </div>
+            </div>
+
+            <div className="flex justify-center">
+                <div className="flex justify-center gap-2 flex-wrap mb-4">
+                    <AlphabetButton label="Z" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="X" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="C" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="V" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="B" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="N" onButtonClick={handleButtonClick} />
+                    <AlphabetButton label="M" onButtonClick={handleButtonClick} />
+                </div>
+            </div>
+      
+      
+      </div>
+        
     );
     }
