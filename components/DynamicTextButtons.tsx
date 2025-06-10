@@ -8,7 +8,7 @@ const TARGET_WORD = 'REACT'; //　判定したい特定の文字列を定義
 
 export default function DynamicTextButtons() {
     // テキストボックスに表示する文字列を管理するstate
-    const [displayedTexts, setDisplayedText] = useState<string[]>(
+    const [displayedTexts, setDisplayedTexts] = useState<string[]>(
         Array(NUMBER_OF_TEXTBOXES).fill( 'ここにはボタンのラベルが表示')
     )
 
@@ -18,7 +18,7 @@ export default function DynamicTextButtons() {
     //AlphabetButtonsがクリックされたときに呼び出されるハンドラ
     // クリックされたボタンのラベルを受け取り、それをdisplayedTextに設定
     const handleButtonClick = (buttonLabel: string) => {
-        setDisplayedText(prevTexts => {
+        setDisplayedTexts(prevTexts => {
             const newTexts = [...prevTexts]; //　現在の配列をコピー
             let updated = false;
 
@@ -65,14 +65,16 @@ export default function DynamicTextButtons() {
 
         // 結合した文字列とTARGET_WORDを比較
         if (extractedLetters.toUpperCase() == TARGET_WORD.toUpperCase()) {
-            setResultMessage('正解です!「 ${TARGET_WORD}」と一致しました!');
+            setResultMessage(`正解です!「 ${TARGET_WORD}」と一致しました!`);
+        } else {
+            setResultMessage(`不正解です。「 ${TARGET_WORD}」と一致しません。`);
         }
         console.log('最終メッセージ:', resultMessage); // 注意: これはsetResultMessage後の即時反映ではない
     }
 
     // リセットボタンがクリックされたときのハンドラ
     const handleResetClick = () => {
-        setDisplayedText(Array(NUMBER_OF_TEXTBOXES).fill('')); // 全てのテキストボックスを空にする
+        setDisplayedTexts(Array(NUMBER_OF_TEXTBOXES).fill('')); // 全てのテキストボックスを空にする
         setResultMessage(''); //結果メッセージもリセット
     }
 
