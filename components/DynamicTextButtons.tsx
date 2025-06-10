@@ -4,12 +4,16 @@ import AlphabetButton from './AlphabetButtons';
 
 //　表示するテキストボックスの数を定義
 const NUMBER_OF_TEXTBOXES = 5;
+const TARGET_WORD = 'REACT'; //　判定したい特定の文字列を定義
 
 export default function DynamicTextButtons() {
     // テキストボックスに表示する文字列を管理するstate
     const [displayedTexts, setDisplayedText] = useState<string[]>(
         Array(NUMBER_OF_TEXTBOXES).fill( 'ここにはボタンのラベルが表示')
     )
+
+    //　判定結果メッセージを管理するstate
+    const [resultMessage, setResultMessage] = useState('');
 
     //AlphabetButtonsがクリックされたときに呼び出されるハンドラ
     // クリックされたボタンのラベルを受け取り、それをdisplayedTextに設定
@@ -36,6 +40,39 @@ export default function DynamicTextButtons() {
                 return newTexts;
         });
     };
+
+    // Enterボタンがクリックされたときのハンドラ
+    const handleEnterClick = () => {
+        console.log('Enterボタンがクリックされました！'); // まずはここを確認
+        // 全てのテキストボックスが埋まっているか確認
+        const allFilled = displayedTexts.every(text => text !== '');
+        console.log('全てのテキストボックスが埋まっているか:', allFilled);
+
+        if (!allFilled) {
+            setResultMessage('全てのテキストボックスを埋めてください!');
+            return;
+        }
+
+        // テキストボックスの文字列を結合（例: 「T」が入力されました -> T）
+        // 各テキストの最初の文字（引用符とスペースを除く）を抽出して結合
+        const extractedLetters = displayedTexts.map(text => {
+            // 例: 「T」が入力されました → T
+            const match = text.match(/「(.)」が入力されました/);
+            return match ? match[1] : ''; // マッチすれば2番目のグループ(1文字目)を返す
+        }).join('')// 結合して1つの文字列にする)
+        console.log('抽出された文字:', extractedLetters);
+
+        // 結合した文字列とTARGET_WORDを比較
+        if (extractedLetters.toUpperCase() == TARGET_WORD.toUpperCase()) {
+            setResultMessage('正解です!「 ${TARGET_WORD}」と一致しました!');
+        }
+    }
+
+    // リセットボタンがクリックされたときのハンドラ
+    const handleResetClick = () => {
+        setDisplayedText(Array(NUMBER_OF_TEXTBOXES).fill('')); // 全てのテキストボックスを空にする
+        setResultMessage(''); //結果メッセージもリセット
+    }
 
     return (
         <div className="p-5 border border-gray-300 rounded-lg max-w-4xl mx-auto text-center my-5">
@@ -64,8 +101,19 @@ export default function DynamicTextButtons() {
                 ))}
                 </div>
             {/* </div> */}
+
+            {/* 判定結果メッセージ表示エリア */}
+            {resultMessage && ( // resultMessageがある場合のみ表示
+                <div className="mt-4 p-3 bg-yellow-500 text-black rounded-md font-bold text-lg">
+                    {resultMessage}
+                </div>
+            )}
             
-            
+            {/* EnterボタンとResetボタンのグループ */}
+            <div className="flex justify-center gap-4 mt-5 mb-8">
+                <AlphabetButton label="Enter" onButtonClick={handleEnterClick} />
+                <AlphabetButton label="Reset" onButtonClick={handleResetClick} />
+            </div>
 
             {/* AlphabetButtonのグループ　*/}
             <div className="flex justify-center">
