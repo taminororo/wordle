@@ -74,7 +74,10 @@ export default function DynamicTextButtons() {
 
     // リセットボタンがクリックされたときのハンドラ
     const handleResetClick = () => {
-        setDisplayedTexts(Array(NUMBER_OF_TEXTBOXES).fill('')); // 全てのテキストボックスを空にする
+        // ここでdisplayedTextsの各要素を新しい空文字列で埋め直す
+        // これにより、Reactが要素を再レンダリングするのを促す
+        //setDisplayedTexts(Array(NUMBER_OF_TEXTBOXES).fill('')); // 全てのテキストボックスを空にする
+        setDisplayedTexts(prevTexts => prevTexts.map(() => '')); //ここ修正
         setResultMessage(''); //結果メッセージもリセット
     }
 
