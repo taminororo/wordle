@@ -38,14 +38,14 @@ export default function DynamicTextButtons() {
     };
 
     return (
-        <div className="p-5 border border-gray-300 rounded-lg max-w-2xl mx-auto text-center my-5">
+        <div className="p-5 border border-gray-300 rounded-lg max-w-4xl mx-auto text-center my-5">
             <h2 className="text-2xl font-bond mb-4">
                 AlphabetButtonを使った動的テキスト表示
             </h2>
 
             {/* 複数のテキストボックス表示エリア　*/}
-            <div className="flex justify-center">
-                <div className="grid grid-flow-col auto-cols-max gap-3 mb-5">
+            {/* <div className="flex justify-center"> */}
+                <div className="grid grid-flow-col auto-cols-max gap-3 mb-5 mx-auto max-w-full">
                 {displayedTexts.map((text, index) => (
                     <div
                         key={index} // Reactのリストレンダリングにはkeyが必要
@@ -53,7 +53,7 @@ export default function DynamicTextButtons() {
                             border border-blue-500 p-4 min-h-20 bg-blue-700 text-white
                             rounded-md flex items-center justify-center text-xl font-bold
                             break-words
-                            w-40 sm:w-48 md:w-56 {/* 各テキストボックスの幅を固定または制限 */}
+                            w-32 sm:w-36 md:w-40 {/* 各テキストボックスの幅を固定または制限 */}
                             flex-shrink-0 {/* テキストボックスが縮むのを防ぐ - Gridでも使えますが、必要に応じて削除 */}
                         "
                         // Gridのgapでマージンは管理されるため、個別のスタイルは不要
@@ -63,7 +63,7 @@ export default function DynamicTextButtons() {
                     </div>
                 ))}
                 </div>
-            </div>
+            {/* </div> */}
             
             
 
