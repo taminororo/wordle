@@ -22,7 +22,7 @@ export default function AlphabetButton({ label, onButtonClick }: AlphabetButtonP
     <div className=" bg-stone-300 rounded-sm inline-flex flex-col justify-center items-center">
         <button className="text-black text-base font-normal font-sans
         px-4 py-2 /* パディングを追加してクリック可能な領域を広げる */
-        hover:bg-stone-400 active:bg-stone-500 transition-colors duration-200
+        hover:bg-stone-400 active:bg-stone-500 rounded-sm transition-colors duration-200
         "
           onClick={handleClick}
         >
