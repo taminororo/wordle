@@ -2,14 +2,39 @@
 import React, { useState } from 'react';
 import AlphabetButton from './AlphabetButtons';
 
+//　表示するテキストボックスの数を定義
+const NUMBER_OF_TEXTBOXES = 5;
+
 export default function DynamicTextButtons() {
     // テキストボックスに表示する文字列を管理するstate
-    const [displayedText, setDisplayedText] = useState('ここにはボタンのラベルが表示');
+    const [displayedTexts, setDisplayedText] = useState<string[]>(
+        Array(NUMBER_OF_TEXTBOXES).fill( 'ここにはボタンのラベルが表示')
+    )
 
     //AlphabetButtonsがクリックされたときに呼び出されるハンドラ
     // クリックされたボタンのラベルを受け取り、それをdisplayedTextに設定
     const handleButtonClick = (buttonLabel: string) => {
-        setDisplayedText(`「${buttonLabel}」が押されました`);
+        setDisplayedText(prevTexts => {
+            const newTexts = [...prevTexts]; //　現在の配列をコピー
+            let updated = false;
+
+            //　既存のテキストボックスの中から、まだ何も表示されていない場所を探す
+            for (let i = 0; i < newTexts.length + 1; i++) {
+                // 初期メッセージ（'ここにはボタンのラベルが表示'）も「空」とみなす
+                if (newTexts[i]  == 'ここにはボタンのラベルが表示') {
+                    newTexts[i] = `「 ${buttonLabel}」が押されました`;
+                    updated = true;
+                    break; //　見つかったらループを抜ける
+                }
+            }
+            //もし全てのテキストボックスが埋まっていたら(オプション：末尾に追加)
+                // このロジックは、上記で定義したNUMBER_OF_TEXTBOXESを超えてテキストボックスを増やしたい場合に有効
+                if (!updated) {
+                    //newTexts.push(`「${buttonLabel}」が押されました`);
+                    //alert( '全てのテキストボックスが埋まりました!');
+                }
+                return newTexts;
+        });
     };
 
     return (
@@ -18,15 +43,19 @@ export default function DynamicTextButtons() {
                 AlphabetButtonを使った動的テキスト表示
             </h2>
 
-            {/* テキストボックス表示エリア　*/}
-            <div
-                className="
-                border border-blue-500 p-4 min-h-20 mb-5 bg-blue-50
-                rounded-md flex items-center justify-center text-xl font-bold
-                text-gray-700 break-words"
+            {/* 複数のテキストボックス表示エリア　*/}
+            {displayedTexts.map((text, index) => (
+                <div
+                    key= {index} //　Reactのリストレンダリングにはkeyが必要
+                    className="
+                    border border-blue-500 p-4 min-h-20 mb-3 bg-blue-50
+                    rounded-md flex items-center justify-center text-xl font-bold
+                    text-gray-700 break-words"
+                    style= {{ marginBottom: index === displayedTexts.length - 1 ? '20px' : '12px'}} //　最後の要素のmargin-bottomを調整
                 >
-                {displayedText}
-            </div>
+                     {text}
+                </div>
+                ))}
 
             {/* AlphabetButtonのグループ　*/}
             <div className="flex justify-center">
