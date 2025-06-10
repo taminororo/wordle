@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 
-export default function MyButtonComponent() {
+export default function MyButtonComponent({ label }: { label: string}) {
   const [text, setText] = useState('');
 
   const handleClick = () => {
-    setText('ボタンが押されました！');
+    setText( label );
   };
 
   return (

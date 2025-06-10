@@ -1,6 +1,6 @@
 import AlphabetButton from '../../components/AlphabetButton';
 import InstructionButton from '../../components/Instruction';
-import Button from '../../components/TestButton'
+import TestButton from '../../components/TestButton'
 
 export default function MyApp() {
   return (
@@ -12,7 +12,7 @@ export default function MyApp() {
       <div>
         <main className="p-8">
           <h1 className="text-xl mb-4">テストページ</h1>
-          <Button />
+          < TestButton label="おはよう"/>
         </main>
       </div>  
       
