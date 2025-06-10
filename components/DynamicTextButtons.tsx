@@ -44,18 +44,25 @@ export default function DynamicTextButtons() {
             </h2>
 
             {/* 複数のテキストボックス表示エリア　*/}
-            {displayedTexts.map((text, index) => (
+            <div className="flex flex-wrap justify-center gap-3 mb-5 auto-cols-max">
+                {displayedTexts.map((text, index) => (
                 <div
                     key= {index} //　Reactのリストレンダリングにはkeyが必要
                     className="
                     border border-blue-500 p-4 min-h-20 mb-3 bg-blue-50
                     rounded-md flex items-center justify-center text-xl font-bold
-                    text-gray-700 break-words"
-                    style= {{ marginBottom: index === displayedTexts.length - 1 ? '20px' : '12px'}} //　最後の要素のmargin-bottomを調整
+                    text-gray-700 break-words
+                    w-40 sm:w-48 md:w-56 
+                    flex-shrink-0 
+                    "
+                    // 個別のmargin-bottomは、親のgapで管理するため不要になる
+                    // style= {{ marginBottom: index === displayedTexts.length - 1 ? '20px' : '12px'}} //　最後の要素のmargin-bottomを調整
                 >
                      {text}
                 </div>
                 ))}
+            </div>
+            
 
             {/* AlphabetButtonのグループ　*/}
             <div className="flex justify-center">
