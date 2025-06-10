@@ -57,7 +57,8 @@ export default function DynamicTextButtons() {
         // 各テキストの最初の文字（引用符とスペースを除く）を抽出して結合
         const extractedLetters = displayedTexts.map(text => {
             // 例: 「T」が入力されました → T
-            const match = text.match(/「(.)」が入力されました/);
+            // 正規表現を修正: 「 の後のスペースを \s* で許容し、「が押されました」に合わせる
+            const match = text.match(/「\s*(.)」が押されました/);
             return match ? match[1] : ''; // マッチすれば2番目のグループ(1文字目)を返す
         }).join('')// 結合して1つの文字列にする)
         console.log('抽出された文字:', extractedLetters);
@@ -66,6 +67,7 @@ export default function DynamicTextButtons() {
         if (extractedLetters.toUpperCase() == TARGET_WORD.toUpperCase()) {
             setResultMessage('正解です!「 ${TARGET_WORD}」と一致しました!');
         }
+        console.log('最終メッセージ:', resultMessage); // 注意: これはsetResultMessage後の即時反映ではない
     }
 
     // リセットボタンがクリックされたときのハンドラ
