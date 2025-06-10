@@ -44,24 +44,27 @@ export default function DynamicTextButtons() {
             </h2>
 
             {/* 複数のテキストボックス表示エリア　*/}
-            <div className="flex flex-wrap justify-center gap-3 mb-5 auto-cols-max">
+            <div className="flex justify-center">
+                <div className="grid grid-flow-col auto-cols-max gap-3 mb-5">
                 {displayedTexts.map((text, index) => (
-                <div
-                    key= {index} //　Reactのリストレンダリングにはkeyが必要
-                    className="
-                    border border-blue-500 p-4 min-h-20 mb-3 bg-blue-50
-                    rounded-md flex items-center justify-center text-xl font-bold
-                    text-gray-700 break-words
-                    w-40 sm:w-48 md:w-56 
-                    flex-shrink-0 
-                    "
-                    // 個別のmargin-bottomは、親のgapで管理するため不要になる
-                    // style= {{ marginBottom: index === displayedTexts.length - 1 ? '20px' : '12px'}} //　最後の要素のmargin-bottomを調整
-                >
-                     {text}
-                </div>
+                    <div
+                        key={index} // Reactのリストレンダリングにはkeyが必要
+                        className="
+                            border border-blue-500 p-4 min-h-20 bg-blue-700 text-white
+                            rounded-md flex items-center justify-center text-xl font-bold
+                            break-words
+                            w-40 sm:w-48 md:w-56 {/* 各テキストボックスの幅を固定または制限 */}
+                            flex-shrink-0 {/* テキストボックスが縮むのを防ぐ - Gridでも使えますが、必要に応じて削除 */}
+                        "
+                        // Gridのgapでマージンは管理されるため、個別のスタイルは不要
+                    >
+                         {/* テキストが空の場合に初期メッセージを表示 */}
+                         {text === '' ? 'ここにはボタンのラベルが表示' : text}
+                    </div>
                 ))}
+                </div>
             </div>
+            
             
 
             {/* AlphabetButtonのグループ　*/}
