@@ -8,10 +8,10 @@ const TARGET_WORD = 'REACT'; //　判定したい特定の文字列を定義
 const NUMBER_OF_GUESS_ROWS =5;
 
 // 各テキストボックスのデータを表現する型定義
-type TextBoxItem = {
-    id: number; // 各テキストボックスに一意のID
-    text: string; // 表示する文字列
-}
+//type TextBoxItem = {
+//     id: number; // 各テキストボックスに一意のID
+//     text: string; // 表示する文字列
+// }
 
 export default function DynamicTextButtons() {
     /// 過去の推測（確定した行）の配列。各要素は文字列

@@ -1,5 +1,5 @@
-import AlphabetButton from '../../components/AlphabetButtons';
-import InstructionButton from '../../components/Instruction';
+//import AlphabetButton from '../../components/AlphabetButtons';
+//import InstructionButton from '../../components/Instruction';
 import TestButton from '../../components/TestButton'
 import DynamicTextButtons from '../../components/DynamicTextButtons';
 
