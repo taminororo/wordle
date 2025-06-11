@@ -3,184 +3,219 @@ import React, { useState } from 'react';
 import AlphabetButton from './AlphabetButtons';
 
 //　表示するテキストボックスの数を定義
-const NUMBER_OF_TEXTBOXES = 5;
+const NUMBER_OF_LETTERS_PER_GUESS = 5; // 各行の文字数
 const TARGET_WORD = 'REACT'; //　判定したい特定の文字列を定義
+const NUMBER_OF_GUESS_ROWS =5;
 
 // 各テキストボックスのデータを表現する型定義
-type TextBoxItem = {
-    id: number; // 各テキストボックスに一意のID
-    text: string; // 表示する文字列
-}
+//type TextBoxItem = {
+//     id: number; // 各テキストボックスに一意のID
+//     text: string; // 表示する文字列
+// }
 
 export default function DynamicTextButtons() {
-    // テキストボックスに表示する文字列を管理するstate
-    //初期化関数を定義して、ユニークなIDを持つ配列を生成
-    const initializeTextBoxes = (): TextBoxItem[] => {
-    return Array.from({ length: NUMBER_OF_TEXTBOXES }, (_, i) => ({
-        id: Date.now() + i, // ユニークなIDを生成
-        text: '' // 初期値はから文字列
-    }));
-    }
+    /// 過去の推測（確定した行）の配列。各要素は文字列
+    const [guesses, setGuesses] = useState<string[]>(Array(NUMBER_OF_GUESS_ROWS).fill(''));
 
-    const [displayedTexts, setDisplayedTexts] = useState<TextBoxItem[]>(initializeTextBoxes);
+    // 現在入力中の文字の配列。各要素は1文字
+    const [currentGuess, setCurrentGuess] = useState<string[]>(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
 
-    //　判定結果メッセージを管理するstate
-    const [resultMessage, setResultMessage] = useState('');
+    // 現在入力中の行のインデックス (0から始まる)
+    const [currentRowIndex, setCurrentRowIndex] = useState(0);
+
+    // 判定結果やゲーム全体のメッセージ
+    const [gameMessage, setGameMessage] = useState('');
+
+    // ゲームが終了したかどうかのフラグ
+    const [isGameOver, setIsGameOver] = useState(false);
 
     //AlphabetButtonsがクリックされたときに呼び出されるハンドラ
-    // クリックされたボタンのラベルを受け取り、それをdisplayedTextに設定
     const handleButtonClick = (buttonLabel: string) => {
-        setResultMessage(''); // ボタンが押されうたびに判定メッセージをリセット
-        setDisplayedTexts(prevTexts => {
-            const newTexts = [...prevTexts]; //　現在の配列をコピー
-            let updated = false;
+        if (isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) {
+            setGameMessage('ゲームは終了しました。Resetを押してください。');
+            return;
+        }
 
-            //　既存のテキストボックスの中から、まだ何も表示されていない場所を探す
-            for (let i = 0; i < newTexts.length + 1; i++) {
-                // 初期メッセージ（'ここにはボタンのラベルが表示'）も「空」とみなす
-                if (newTexts[i].text  == '') {
-                    newTexts[i] = { ...newTexts[i], text: `「 ${buttonLabel}」が押されました` };
-                    updated = true;
-                    break; //　見つかったらループを抜ける
+        // 現在の推測がすでに5文字なら、新しい文字は追加しない
+        const currentLettersCount = currentGuess.filter(char => char !== '').length;
+        if (currentLettersCount >= NUMBER_OF_LETTERS_PER_GUESS && buttonLabel !== 'Backspace') {
+            return;
+        }
+
+        if (buttonLabel === 'Backspace') {
+            //Backspaceの場合、最後の文字を消去
+            setCurrentGuess(prevGuess => {
+                const newGuess = [...prevGuess];
+                for (let i = newGuess.length - 1; i >= 0; i--) {
+                    if (newGuess[i] !== '') {
+                        newGuess[i] = '';
+                        break;
+                    }
                 }
-            }
-            //もし全てのテキストボックスが埋まっていたら(オプション：末尾に追加)
-                // このロジックは、上記で定義したNUMBER_OF_TEXTBOXESを超えてテキストボックスを増やしたい場合に有効
-                if (!updated) {
-                    //newTexts.push(`「${buttonLabel}」が押されました`);
-                    //alert( '全てのテキストボックスが埋まりました!');
-                    //newTexts[0] = { ...newTexts[0], text: `「${buttonLabel}」が上書きされました！` }; // 最初のボックスを上書き
+                return newGuess;
+            })
+        } else {
+            // 通常のアルファベット入力の場合
+            setCurrentGuess(prevGuess => {
+                const newGuess = [...prevGuess];
+                for (let i = 0; i < newGuess.length; i++) {
+                    if (newGuess[i] === '') {
+                        newGuess[i] = buttonLabel;
+                        break;
+                    }
                 }
-                return newTexts;
-        });
+                return newGuess;
+            })
+        }
+        setGameMessage('')// 入力中はメッセージをクリア
     };
 
     // Enterボタンがクリックされたときのハンドラ
     const handleEnterClick = () => {
-        console.log('Enterボタンがクリックされました！'); // まずはここを確認
-        // 全てのテキストボックスが埋まっているか確認
-        const allFilled = displayedTexts.every(item => item.text !== '');
-        console.log('全てのテキストボックスが埋まっているか:', allFilled);
-
-        if (!allFilled) {
-            setResultMessage('全てのテキストボックスを埋めてください!');
+        if (isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) {
+            setGameMessage('ゲームは終了しました。Resetを押してください。');
             return;
         }
 
-        // テキストボックスの文字列を結合（例: 「T」が入力されました -> T）
-        // 各テキストの最初の文字（引用符とスペースを除く）を抽出して結合
-        const extractedLetters = displayedTexts.map(item => {
-            // 例: 「T」が入力されました → T
-            // 正規表現を修正: 「 の後のスペースを \s* で許容し、「が押されました」に合わせる
-            const match = item.text.match(/「\s*(.)」が押されました/);
-            return match ? match[1] : ''; // マッチすれば2番目のグループ(1文字目)を返す
-        }).join('')// 結合して1つの文字列にする)
-        console.log('抽出された文字:', extractedLetters);
+        const currentGuessString = currentGuess.filter(char => char !== '').join('');
 
-        // 結合した文字列とTARGET_WORDを比較
-        if (extractedLetters.toUpperCase() == TARGET_WORD.toUpperCase()) {
-            setResultMessage(`正解です!「 ${TARGET_WORD}」と一致しました!`);
-        } else {
-            setResultMessage(`不正解です。「 ${TARGET_WORD}」と一致しません。`);
+        // 5文字入力されているか確認
+        if (currentGuessString.length !== NUMBER_OF_LETTERS_PER_GUESS) {
+            setGameMessage(`${NUMBER_OF_LETTERS_PER_GUESS}文字入力してください！`);
+            return;
         }
-        console.log('最終メッセージ:', resultMessage); // 注意: これはsetResultMessage後の即時反映ではない
-    }
+
+        // 推測を結合して、ターゲットワードと比較
+        if (currentGuessString.toUpperCase() === TARGET_WORD.toUpperCase()) {
+            setGameMessage(`正解です！「${TARGET_WORD}」`);
+            setIsGameOver(true);
+            
+            // 最後の正解をguessesに反映
+            setGuesses(prevGuesses => {
+                const newGuesses = [...prevGuesses];
+                newGuesses[currentRowIndex] = currentGuessString;
+                return newGuesses;
+            });
+
+        } else {
+            // 不正解の場合、現在の推測を確定し、次の行へ
+            setGameMessage('不正解です。もう一度試してください。');
+            setGuesses(prevGuesses => {
+                const newGuesses = [...prevGuesses];
+                newGuesses[currentRowIndex] = currentGuessString; // 現在の入力行を確定
+                return newGuesses;
+            });
+
+            // 次の行へ移動
+            setCurrentRowIndex(prevIndex => prevIndex + 1);
+
+            // currentGuessをリセット
+            setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
+
+            // 最終試行の場合
+            if (currentRowIndex + 1 >= NUMBER_OF_GUESS_ROWS) {
+                setGameMessage(`ゲームオーバーです。「${TARGET_WORD}」が正解でした。`);
+                setIsGameOver(true);
+            }
+        }
+    };
 
     // リセットボタンがクリックされたときのハンドラ
     const handleResetClick = () => {
-        // ここでdisplayedTextsの各要素を新しい空文字列で埋め直す
-        // これにより、Reactが要素を再レンダリングするのを促す
-        //setDisplayedTexts(Array(NUMBER_OF_TEXTBOXES).fill('')); // 全てのテキストボックスを空にする
-        setDisplayedTexts(initializeTextBoxes()); //ここ修正
-        setResultMessage(''); //結果メッセージもリセット
-    }
-
+        setGuesses(Array(NUMBER_OF_GUESS_ROWS).fill(''));
+        setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
+        setCurrentRowIndex(0);
+        setGameMessage('');
+        setIsGameOver(false);
+    };
     return (
         <div className="p-5 border border-gray-300 rounded-lg max-w-4xl mx-auto text-center my-5">
             <h2 className="text-2xl font-bond mb-4">
                 AlphabetButtonを使った動的テキスト表示
             </h2>
 
-            {/* 複数のテキストボックス表示エリア　*/}
+            
+            {/* 各推測行の表示エリア */}
+            <div className="space-y-3 mb-5"> {/* 各行間にスペース */}
             {/* <div className="flex justify-center"> */}
-                <div className="grid grid-flow-col auto-cols-max gap-3 mb-5 mx-auto max-w-full">
-                {displayedTexts.map((item) => (
-                    <div
-                        key={item.id} // Reactのリストレンダリングにはkeyが必要
-                        className="
-                            border border-blue-500 p-4 min-h-20 bg-blue-700 text-white
-                            rounded-md flex items-center justify-center text-xl font-bold
-                            break-words
-                            w-32 sm:w-36 md:w-40 {/* 各テキストボックスの幅を固定または制限 */}
-                            flex-shrink-0 {/* テキストボックスが縮むのを防ぐ - Gridでも使えますが、必要に応じて削除 */}
-                        "
-                        // Gridのgapでマージンは管理されるため、個別のスタイルは不要
-                    >
-                         {/* テキストが空の場合に初期メッセージを表示 */}
-                         {item.text === '' ? 'ここにはボタンのラベルが表示' : item.text}
-                    </div>
-                ))}
-                </div>
+                {Array.from({ length: NUMBER_OF_GUESS_ROWS }).map((_, rowIndex) => {
+                    const rowContent = rowIndex < currentRowIndex
+                        ? guesses[rowIndex].split('') // 確定済みの行
+                        : rowIndex === currentRowIndex
+                            ? currentGuess // 現在入力中の行
+                            : Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''); // 未入力の行
+
+                    return (
+                        <div key={rowIndex} className="flex justify-center gap-3">
+                            {rowContent.map((char, charIndex) => (
+                                <div
+                                    key={charIndex}
+                                    className={`
+                                        border border-blue-500 p-4 min-h-16 w-16
+                                        rounded-md flex items-center justify-center text-xl font-bold
+                                        break-words
+                                        ${
+                                            rowIndex < currentRowIndex && char !== ''
+                                                ? (
+                                                    char.toUpperCase() === TARGET_WORD[charIndex].toUpperCase()
+                                                        ? 'bg-green-700' // 正解の文字
+                                                        : 'bg-red-700' // 不正解の文字
+                                                )
+                                                : rowIndex === currentRowIndex && char !== ''
+                                                    ? 'bg-blue-700' // 入力中の文字
+                                                    : 'bg-gray-700' // 空のボックス
+                                        }
+                                        ${rowIndex === currentRowIndex && charIndex === currentGuess.filter(c => c !== '').length && 'border-white'} {/* 現在の入力位置に白枠 */}
+                                    `}
+                                >
+                                    {char}
+                                </div>
+                            ))}
+                        </div>
+                    );
+                })}
+            </div>
+
             {/* </div> */}
 
-            {/* 判定結果メッセージ表示エリア */}
-            {resultMessage && ( // resultMessageがある場合のみ表示
+            {/* ゲームメッセージ表示エリア */}
+            {gameMessage && (
                 <div className="mt-4 p-3 bg-yellow-500 text-black rounded-md font-bold text-lg">
-                    {resultMessage}
+                    {gameMessage}
                 </div>
             )}
             
-            {/* EnterボタンとResetボタンのグループ */}
+{/* EnterボタンとResetボタンのグループ */}
             <div className="flex justify-center gap-4 mt-5 mb-8">
                 <AlphabetButton label="Enter" onButtonClick={handleEnterClick} />
                 <AlphabetButton label="Reset" onButtonClick={handleResetClick} />
+                <AlphabetButton label="Backspace" onButtonClick={() => handleButtonClick('Backspace')} /> {/* Backspaceボタン追加 */}
             </div>
 
-            {/* AlphabetButtonのグループ　*/}
-            <div className="flex justify-center">
+            {/* AlphabetButtonのグループ（キーボード部分） */}
+            <div className="flex justify-center flex-col items-center">
                 <div className="flex justify-center gap-2 flex-wrap mb-4">
-                    <AlphabetButton label="Q" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="W" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="E" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="D" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="R" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="T" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="Y" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="U" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="I" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="O" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="P" onButtonClick={handleButtonClick} />
+                    {'QWERTYUIOP'.split('').map(label => (
+                        <AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} />
+                    ))}
                 </div>
             </div>
             
-            <div className="flex justify-center">
+            <div className="flex justify-center flex-col items-center">
                 <div className="flex justify-center gap-2 flex-wrap mb-4">
-                    <AlphabetButton label="A" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="S" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="D" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="F" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="G" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="H" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="J" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="K" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="L" onButtonClick={handleButtonClick} />
+                    {'ASDFGHJKL'.split('').map(label => (
+                        <AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} />
+                    ))}
                 </div>
             </div>
 
-            <div className="flex justify-center">
+            <div className="flex justify-center flex-col items-center">
                 <div className="flex justify-center gap-2 flex-wrap mb-4">
-                    <AlphabetButton label="Z" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="X" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="C" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="V" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="B" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="N" onButtonClick={handleButtonClick} />
-                    <AlphabetButton label="M" onButtonClick={handleButtonClick} />
+                    {'ZXCVBNM'.split('').map(label => (
+                        <AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} />
+                    ))}
                 </div>
             </div>
-      
-      
-      </div>
-        
+        </div>
     );
-    }
+}
