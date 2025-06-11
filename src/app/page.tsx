@@ -1,7 +1,7 @@
 //import AlphabetButton from '../../components/AlphabetButtons';
 //import InstructionButton from '../../components/Instruction';
-import TestButton from '../../components/TestButton'
-import DynamicTextButtons from '../../components/DynamicTextButtons';
+import TestButton from '../components/TestButton'
+import DynamicTextButtons from '../components/DynamicTextButtons';
 
 export default function MyApp() {
   return (
