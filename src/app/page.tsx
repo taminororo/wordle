@@ -15,7 +15,28 @@ export default function MyApp() {
           <h1 className="text-xl mb-4">テストページ</h1>
           < TestButton label="おはよう"/>
         </main>
-      </div>  
+      </div> 
+
+      <div>
+        <input
+          type="text"
+          placeholder="回転するテキストボックス"
+          className="w-64 h-8 p-2 border border-gray-300 transform rotate-45 origin-center"
+        ></input>
+      </div> 
+      <div>
+        <div className="w-16 h-16 bg-red-500 rounded-full animate-spin"></div>
+      </div>
+      <div>
+        <div className="text-3xl font-bold text-purple-600 animate-wiggle">
+          ユラユラ動くテキスト
+        </div>
+
+            <p className="mt-4 text-xl text-green-700 animate-fadeInDown">
+              上からフェードインする文章
+            </p>
+      </div>
+        
 
       <div className="font-sans text-center p-5">
         <h1 className="text-3xl font bold mb-8">React　コンポーネント連携デモ</h1>
