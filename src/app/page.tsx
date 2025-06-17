@@ -39,7 +39,7 @@ export default function MyApp() {
         
 
       <div className="font-sans text-center p-5">
-        <h1 className="text-3xl font bold mb-8">React　コンポーネント連携デモ</h1>
+        <h1 className="text-3xl font bold mb-8">wordle</h1>
         <DynamicTextButtons />
       </div>
       
