@@ -1,77 +1,199 @@
+
+
 @import "tailwindcss";
 
+
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+
+--background: #ffffff;
+
+--foreground: #171717;
+
 }
+
+
+
+/* 既存の背景色クラスはそのまま */
 
 .bg-correct {
-  background-color: green;
+
+background-color: green; /* Wordleの緑色に合わせる */
+
 }
+
+
 
 .bg-present {
-  background-color: yellow;
+
+background-color: rgb(201, 180, 88); /* Wordleの黄色に合わせる */
+
 }
+
+
 
 .bg-absent {
-  background-color: gray;
+
+background-color: rgb(120, 124, 126); /* Wordleの灰色に合わせる */
+
 }
+
+
+
+
+
+/* --- ★フリップアニメーションのCSS定義 --- */
+
+
+
+/* 各タイル（文字のマス目）のラッパー */
 
 .flip-card {
-  background-color: transparent;
-  width: 100px;
-  height: 100px;
-  perspective: 1000px;
+
+background-color: transparent;
+
+width: 56px; /* w-14 (14 * 4 = 56px) に合わせて調整 */
+
+height: 56px; /* h-14 (14 * 4 = 56px) に合わせて調整 */
+
+perspective: 1000px; /* 3D効果のために必要 */
+
 }
+
+
+
+/* フリップアニメーションの中心となる要素 */
 
 .flip-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  transition: transform 0.8s;
-  transform-style: preserve-3d;
+
+position: relative;
+
+width: 100%;
+
+height: 100%;
+
+text-align: center;
+
+transition: transform 0.6s; /* アニメーションの速度と滑らかさ */
+
+transform-style: preserve-3d; /* 3D回転のために必要 */
+
 }
 
-.flip-card:hover .flip-card-inner {
-  transform: rotateY(180deg);
+
+
+/* JavaScriptで 'flipped' クラスが追加されたときにフリップ */
+
+.flip-card.flipped .flip-card-inner {
+
+transform: rotateY(180deg);
+
 }
+
+
+
+/* フロント面とバック面の共通スタイル */
 
 .flip-card-front, .flip-card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  -webkit-backface-visibility: hidden; /* Safari */
-  backface-visibility: hidden;
-  background-color: #bbb;
-  color: black;
+
+position: absolute;
+
+width: 100%;
+
+height: 100%;
+
+-webkit-backface-visibility: hidden; /* Safariで裏面がチラつくのを防ぐ */
+
+backface-visibility: hidden; /* 裏面を隠す */
+
+display: flex; /* Tailwindのflexプロパティが効くように */
+
+align-items: center;
+
+justify-content: center;
+
 }
+
+
+
+/* フロント面 */
 
 .flip-card-front {
-  
+
+/* ここに共通の border, rounded-md, text-xl, font-bold などはJSX側で適用されるため、
+
+特に追加のCSSは不要。デフォルトの背景はJSXのbg-gray-700などで上書きされる。 */
+
 }
+
+
+
+/* バック面 */
 
 .flip-card-back {
-  background-color: dodgerblue;
-  color: white;
-  transform: rotateY(180deg);
+
+/* この面のスタイルは、フリップ後の最終的な表示です。
+
+JSXで適用される bg-green-700, bg-yellow-500, bg-gray-700 がここに適用されます。
+
+デフォルトの背景色(dodgerblue)は削除するか、デバッグ用に残しても良いでしょう。 */
+
+/* background-color: dodgerblue; /* 削除推奨 */
+
+color: white; /* テキストの色 */
+
+transform: rotateY(180deg); /* 裏面を最初から回転させておく */
+
 }
+
+
+
+/* 各タイルのフリップアニメーションをずらすためのスタイル (optional) */
+
+/* この部分は、JSXの style={{ animationDelay: ... }} で制御するので、ここでは直接記述しません */
+
+
+
+/* --- ★フリップアニメーションのCSS定義ここまで --- */
+
+
+
+
+
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+--color-background: var(--background);
+
+--color-foreground: var(--foreground);
+
+--font-sans: var(--font-geist-sans);
+
+--font-mono: var(--font-geist-mono);
+
 }
+
+
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+
+:root {
+
+--background: #0a0a0a;
+
+--foreground: #ededed;
+
 }
 
+}
+
+
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
+background: var(--background);
+
+color: var(--foreground);
+
+font-family: Arial, Helvetica, sans-serif;
+
 }
