@@ -22,6 +22,11 @@ export default function DynamicTextButtons() {
   );
   // ---
 
+//---------------
+//ここから下はイベントハンドラ
+//---------------
+
+// キーボードまたはBackSpaceボタンがクリックされたときのイベントハンドラ
   const handleButtonClick = (buttonLabel: string) => {
     if (isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) {
       setGameMessage('ゲームは終了しました。Resetを押してください。');
@@ -59,6 +64,7 @@ export default function DynamicTextButtons() {
     setGameMessage(''); // 入力中はメッセージをクリア
   };
 
+  // Enterボタンがクリックされたときのイベントハンドラ
   const handleEnterClick = () => {
     if (isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) {
       setGameMessage('ゲームは終了しました。Resetを押してください。');
@@ -83,16 +89,24 @@ export default function DynamicTextButtons() {
     if (currentGuessString.toUpperCase() === TARGET_WORD.toUpperCase()) {
       // 少し遅延させてからメッセージを表示し、ゲーム終了
       setTimeout(() => {
+        //  setGuesses(prevGuesses => {
+        //   const newGuesses = [...prevGuesses];
+        //   newGuesses[currentRowIndex] = currentGuessString; // 現在の入力行を確定
+        //   return newGuesses;
+        // });
         setGameMessage(`正解です！「${TARGET_WORD}」`);
         setIsGameOver(true);
+        setCurrentRowIndex(prevIndex => prevIndex + 1); // 正解したので次の行へ移動
+        // currentGuessをリセット
+        setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
       }, NUMBER_OF_LETTERS_PER_GUESS * 150 + 800); // 各タイルのアニメーション時間＋α
 
       // 最後の正解をguessesに反映 (フリップアニメーションと並行して行われる)
-      setGuesses(prevGuesses => {
-        const newGuesses = [...prevGuesses];
-        newGuesses[currentRowIndex] = currentGuessString;
-        return newGuesses;
-      });
+       setGuesses(prevGuesses => {
+         const newGuesses = [...prevGuesses];
+         newGuesses[currentRowIndex] = currentGuessString;
+         return newGuesses;
+       });
     } else {
       // 不正解の場合、現在の推測を確定し、次の行へ
       setGameMessage('不正解です。もう一度試してください。');
