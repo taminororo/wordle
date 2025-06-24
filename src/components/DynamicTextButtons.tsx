@@ -1,13 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
-
+import {WORD_LIST} from "../utils/words";
 import AlphabetButton from './AlphabetButtons';
 
 // 定義はそのまま
 const NUMBER_OF_LETTERS_PER_GUESS = 5;
-const TARGET_WORD = 'REACT';
+//const TARGET_WORD = 'REACT';
 const NUMBER_OF_GUESS_ROWS = 5;
+// --- ★追加: ターゲットワードをランダムに選ぶ
+const getRandomWord = (): string => {
+  const randomIndex = Math.floor(Math.random() * WORD_LIST.length);
+  return WORD_LIST[randomIndex].toUpperCase();
+}
 
 export default function DynamicTextButtons() {
   const [guesses, setGuesses] = useState<string[]>(Array(NUMBER_OF_GUESS_ROWS).fill(''));
@@ -21,6 +26,8 @@ export default function DynamicTextButtons() {
     Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(false))
   );
   // ---
+  // --- ★追加: ターゲットワードをランダムに設定
+  const [targetWord, setTargetWord] = useState(getRandomWord());
 
 //---------------
 //ここから下はイベントハンドラ
@@ -28,6 +35,8 @@ export default function DynamicTextButtons() {
 
 // キーボードまたはBackSpaceボタンがクリックされたときのイベントハンドラ
   const handleButtonClick = (buttonLabel: string) => {
+    if (!targetWord) return; // ターゲットワードが未設定の場合は何もしない
+
     if (isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) {
       setGameMessage('ゲームは終了しました。Resetを押してください。');
       return;
@@ -86,7 +95,7 @@ export default function DynamicTextButtons() {
     // ---
 
     // 推測を結合して、ターゲットワードと比較
-    if (currentGuessString.toUpperCase() === TARGET_WORD.toUpperCase()) {
+    if (currentGuessString.toUpperCase() === targetWord.toUpperCase()) {
       // 少し遅延させてからメッセージを表示し、ゲーム終了
       setTimeout(() => {
         //  setGuesses(prevGuesses => {
@@ -94,7 +103,7 @@ export default function DynamicTextButtons() {
         //   newGuesses[currentRowIndex] = currentGuessString; // 現在の入力行を確定
         //   return newGuesses;
         // });
-        setGameMessage(`正解です！「${TARGET_WORD}」`);
+        setGameMessage(`正解です！「${targetWord}」`);
         setIsGameOver(true);
         setCurrentRowIndex(prevIndex => prevIndex + 1); // 正解したので次の行へ移動
         // currentGuessをリセット
@@ -136,7 +145,7 @@ export default function DynamicTextButtons() {
 
         // 最終試行の場合
         if (currentRowIndex + 1 >= NUMBER_OF_GUESS_ROWS) {
-          setGameMessage(`ゲームオーバーです。「${TARGET_WORD}」が正解でした。`);
+          setGameMessage(`ゲームオーバーです。「${targetWord}」が正解でした。`);
           setIsGameOver(true);
         }
       }, NUMBER_OF_LETTERS_PER_GUESS * 150 + 800); // フリップアニメーションの完了を待つ
@@ -151,6 +160,7 @@ export default function DynamicTextButtons() {
     setIsGameOver(false);
     // --- ★追加: リセット時にフリップ状態も初期化
     setFlipStates(Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(false)));
+    setTargetWord(getRandomWord()); // ターゲットワードもリセット
     // ---
   };
 
@@ -175,9 +185,9 @@ export default function DynamicTextButtons() {
                 let tileStateClass = ''; // タイルの状態に応じた背景色
                 if (rowIndex < currentRowIndex) {
                   // 確定済みの行
-                  if (char.toUpperCase() === TARGET_WORD[charIndex].toUpperCase()) {
+                  if (char.toUpperCase() === targetWord[charIndex].toUpperCase()) {
                     tileStateClass = 'bg-green-700'; // 正解の文字
-                  } else if (TARGET_WORD.toUpperCase().includes(char.toUpperCase()) && char !== '') {
+                  } else if (targetWord.toUpperCase().includes(char.toUpperCase()) && char !== '') {
                     tileStateClass = 'bg-yellow-500'; // 含まれているが位置が違う
                   } else if (char !== '') {
                     tileStateClass = 'bg-gray-700'; // 含まれていない文字
