@@ -1,6 +1,6 @@
 'use client'; // クライアントサイドでの実行を明示
 
-import TestButton from '../components/TestButton'; // TestButtonはもし不要なら削除してもOKです
+// import TestButton from '../components/TestButton'; // TestButtonはもし不要なら削除してもOKです
 import DynamicTextButtons from '../components/DynamicTextButtons';
 import BackgroundCascade from '../components/BackgroundCasacde'; // ★ここを追加: 背景コンポーネントをインポート
 
@@ -20,12 +20,12 @@ export default function MyApp() {
       {/* z-10 は背景の上に表示されることを保証します。 */}
       <div className="container mx-auto mt-8 relative z-10">
         {/* テストセクション (もし不要であれば、このセクション全体を削除できます) */}
-        <section className="mb-8">
+        {/* <section className="mb-8">
           <main className="p-8">
             <h1 className="text-xl mb-4">テストページ</h1>
             <TestButton label="おはよう" />
           </main>
-        </section>
+        </section> */}
 
         {/* Wordleセクション */}
         <section className="mb-8">

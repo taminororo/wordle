@@ -203,7 +203,7 @@ font-family: Arial, Helvetica, sans-serif;
 
 @keyframes wordCascade {
   0% {
-    transform: translateY(-50px) translateX(var(--random-x, 0)); /* 上から開始、横位置もランダム */
+    transform: translateY(0px) translateX(var(--random-x, 0)); /* 上から開始、横位置もランダム */
     opacity: 0;
   }
   20% {
@@ -223,7 +223,7 @@ font-family: Arial, Helvetica, sans-serif;
   top: 0;
   left: 0;
   font-size: 2rem; /* 大きめのフォントサイズ */
-  color: rgba(255, 255, 255, 0.1); /* 薄い色で背景感を出す */
+  color: rgba(255, 255, 255, 1.0); /* 薄い色で背景感を出す */
   pointer-events: none; /* クリックなどのイベントを透過させる */
   z-index: -1; /* 他のUI要素の下に配置 */
 
