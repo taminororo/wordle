@@ -197,3 +197,36 @@ color: var(--foreground);
 font-family: Arial, Helvetica, sans-serif;
 
 }
+
+/* global.css */
+/* ... (既存のCSS) ... */
+
+@keyframes wordCascade {
+  0% {
+    transform: translateY(-50px) translateX(var(--random-x, 0)); /* 上から開始、横位置もランダム */
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8; /* フェードイン */
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(calc(100vh + 50px)) translateX(var(--random-x, 0)); /* 画面下まで移動 */
+    opacity: 0; /* フェードアウト */
+  }
+}
+
+.cascading-word {
+  position: fixed; /* 画面に固定して、スクロールに影響されないように */
+  top: 0;
+  left: 0;
+  font-size: 2rem; /* 大きめのフォントサイズ */
+  color: rgba(255, 255, 255, 0.1); /* 薄い色で背景感を出す */
+  pointer-events: none; /* クリックなどのイベントを透過させる */
+  z-index: -1; /* 他のUI要素の下に配置 */
+
+  /* アニメーションの適用。 duration, delay, timing-function はJSで動的に設定することも可能 */
+  animation: wordCascade var(--animation-duration, 5s) linear forwards;
+}
