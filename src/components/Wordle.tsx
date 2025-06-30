@@ -14,7 +14,7 @@ const getRandomWord = (): string => {
   return WORD_LIST[randomIndex].toUpperCase();
 }
 
-export default function DynamicTextButtons() {
+export default function Wordle() {
   const [guesses, setGuesses] = useState<string[]>(Array(NUMBER_OF_GUESS_ROWS).fill(''));
   const [currentGuess, setCurrentGuess] = useState<string[]>(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
   const [currentRowIndex, setCurrentRowIndex] = useState(0);

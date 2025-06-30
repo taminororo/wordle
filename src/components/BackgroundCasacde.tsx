@@ -32,7 +32,7 @@ export default function BackgroundCascade() {
     const randomWord = fiveLetterWords[Math.floor(Math.random() * fiveLetterWords.length)];
     const duration = Math.random() * 5 + 5; // 5秒から10秒の間でランダム
     //onst duration = 10; // 3秒から5秒の間でランダム
-    const delay = Math.random() * 2; // 0秒から2秒の間でランダムな遅延
+    const delay = Math.random() * 0; // 0秒から2秒の間でランダムな遅延
     const startX = Math.random() * 100; // 0%から100%の間でランダムな横開始位置
     // ★修正点1: 現在の単語のIDをローカル変数に保存
     const currentWordId = nextCascadeWordId.current++; 

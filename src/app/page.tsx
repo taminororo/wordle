@@ -1,7 +1,7 @@
 'use client'; // クライアントサイドでの実行を明示
 
 // import TestButton from '../components/TestButton'; // TestButtonはもし不要なら削除してもOKです
-import DynamicTextButtons from '../components/DynamicTextButtons';
+import Wordle from '../components/Wordle';
 import BackgroundCascade from '../components/BackgroundCasacde'; // ★ここを追加: 背景コンポーネントをインポート
 
 export default function MyApp() {
@@ -32,7 +32,7 @@ export default function MyApp() {
           <h2 className="text-xl font-bold mb-4">Wordle</h2>
           <div className="font-sans text-center p-5">
             <h1 className="text-3xl font-bold mb-8">wordle</h1> {/* font-boldを追加 */}
-            <DynamicTextButtons />
+            <Wordle />
           </div>
         </section>
       </div>
