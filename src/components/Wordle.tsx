@@ -21,6 +21,12 @@ export default function Wordle() {
   const [gameMessage, setGameMessage] = useState('');
   const [isGameOver, setIsGameOver] = useState(false);
 
+  // --- ★追加: ダイアログの状態を管理
+  const [dialog, setDialog] = useState({ isOpen: false, message: '' });
+
+  // --- ★追加: キーボードの各キーの色を管理するState
+  const [keyStates, setKeyStates] = useState<{[key: string]: string}>({});
+
   // --- ★追加: 各タイルのフリップ状態を管理するState
   const [flipStates, setFlipStates] = useState<boolean[][]>(
     Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(false))
@@ -28,6 +34,12 @@ export default function Wordle() {
   // ---
   // --- ★追加: ターゲットワードをランダムに設定
   const [targetWord, setTargetWord] = useState(getRandomWord());
+
+  // --- ★追加: 各タイルの評価状態（色）を管理するState
+  const [evaluationStates, setEvaluationStates] = useState<string[][]>(
+    Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''))
+  );
+  // ---
 
 //---------------
 //ここから下はイベントハンドラ
@@ -87,69 +99,82 @@ export default function Wordle() {
       return;
     }
 
-    // --- ★変更: フリップアニメーションをトリガー
-    // まず、現在の行のタイルのフリップ状態をtrueに設定する新しい配列を作成
-    const newFlipStates = [...flipStates];
-    newFlipStates[currentRowIndex] = Array(NUMBER_OF_LETTERS_PER_GUESS).fill(true);
-    setFlipStates(newFlipStates);
+    // --- ★変更: 先に評価を行い、結果をStateに保存
+    const newEvaluation = currentGuess.map((char, index) => {
+      if (char.toUpperCase() === targetWord[index].toUpperCase()) {
+        return 'bg-green-700'; // 正解
+      } else if (targetWord.toUpperCase().includes(char.toUpperCase())) {
+        return 'bg-yellow-500'; // 含まれているが位置が違う
+      } else {
+        return 'bg-gray-700'; // 含まれていない
+      }
+    });
+
+    setEvaluationStates(prev => {
+      const newStates = [...prev];
+      newStates[currentRowIndex] = newEvaluation;
+      return newStates;
+    });
+
+    // --- ★追加: キーボードの状態を更新
+    const newKeyStates = { ...keyStates };
+    newEvaluation.forEach((color, index) => {
+      const char = currentGuess[index].toUpperCase();
+      const currentColor = newKeyStates[char];
+
+      // 緑は最優先、次に黄色、最後に灰色
+      if (currentColor !== 'bg-green-700') {
+        if (color === 'bg-green-700' || (color === 'bg-yellow-500' && currentColor !== 'bg-yellow-500')) {
+          newKeyStates[char] = color;
+        } else if (!currentColor) {
+          newKeyStates[char] = color;
+        }
+      }
+    });
+    setKeyStates(newKeyStates);
     // ---
 
-    // 推測を結合して、ターゲットワードと比較
-    if (currentGuessString.toUpperCase() === targetWord.toUpperCase()) {
-      // 少し遅延させてからメッセージを表示し、ゲーム終了
+    // --- ★変更: フリップアニメーションを順番にトリガー
+    for (let i = 0; i < NUMBER_OF_LETTERS_PER_GUESS; i++) {
       setTimeout(() => {
-        //  setGuesses(prevGuesses => {
-        //   const newGuesses = [...prevGuesses];
-        //   newGuesses[currentRowIndex] = currentGuessString; // 現在の入力行を確定
-        //   return newGuesses;
-        // });
-        setGameMessage(`正解です！「${targetWord}」`);
-        setIsGameOver(true);
-        setCurrentRowIndex(prevIndex => prevIndex + 1); // 正解したので次の行へ移動
-        // currentGuessをリセット
-        setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
-      }, NUMBER_OF_LETTERS_PER_GUESS * 150 + 800); // 各タイルのアニメーション時間＋α
-
-      // 最後の正解をguessesに反映 (フリップアニメーションと並行して行われる)
-       setGuesses(prevGuesses => {
-         const newGuesses = [...prevGuesses];
-         newGuesses[currentRowIndex] = currentGuessString;
-         return newGuesses;
-       });
-    } else {
-      // 不正解の場合、現在の推測を確定し、次の行へ
-      setGameMessage('不正解です。もう一度試してください。');
-
-      // guessesの更新はフリップアニメーションが完了してから行うとより自然
-      setTimeout(() => {
-        setGuesses(prevGuesses => {
-          const newGuesses = [...prevGuesses];
-          newGuesses[currentRowIndex] = currentGuessString; // 現在の入力行を確定
-          return newGuesses;
-        });
-
-        // 次の行へ移動
-        setCurrentRowIndex(prevIndex => prevIndex + 1);
-
-        // currentGuessをリセット
-        setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
-
-        // 次の行のフリップ状態をfalseにリセット (新しい行なのでフリップしていない状態)
-        setFlipStates(prevFlipStates => {
-          const resetFlipStates = [...prevFlipStates];
-          if (prevFlipStates[currentRowIndex + 1]) { // 次の行が存在する場合のみリセット
-            resetFlipStates[currentRowIndex + 1] = Array(NUMBER_OF_LETTERS_PER_GUESS).fill(false);
+        setFlipStates(prev => {
+          const newFlipStates = [...prev];
+          if (newFlipStates[currentRowIndex]) {
+            newFlipStates[currentRowIndex][i] = true;
           }
-          return resetFlipStates;
+          return newFlipStates;
         });
-
-        // 最終試行の場合
-        if (currentRowIndex + 1 >= NUMBER_OF_GUESS_ROWS) {
-          setGameMessage(`ゲームオーバーです。「${targetWord}」が正解でした。`);
-          setIsGameOver(true);
-        }
-      }, NUMBER_OF_LETTERS_PER_GUESS * 150 + 800); // フリップアニメーションの完了を待つ
+      }, i * 150); // 150msずつ遅延させてフリップ
     }
+    // ---
+
+    // --- ★変更: フリップアニメーションの完了後にゲーム終了処理を行う
+    const totalAnimationTime = (NUMBER_OF_LETTERS_PER_GUESS - 1) * 150 + 600; // (最後のタイル遅延 + アニメーション時間)
+
+    setTimeout(() => {
+      if (currentGuessString.toUpperCase() === targetWord.toUpperCase()) {
+        // 正解の場合
+        setDialog({ isOpen: true, message: `正解です！「${targetWord}」` });
+        setIsGameOver(true);
+      } else if (currentRowIndex + 1 >= NUMBER_OF_GUESS_ROWS) {
+        // ゲームオーバーの場合
+        setDialog({ isOpen: true, message: `ゲームオーバーです。「${targetWord}」が正解でした。` });
+        setIsGameOver(true);
+      } else {
+        // ゲーム続行の場合
+        //setGameMessage('不正解です。もう一度試してください。');
+      }
+
+      // 共通の行更新処理
+      setGuesses(prevGuesses => {
+        const newGuesses = [...prevGuesses];
+        newGuesses[currentRowIndex] = currentGuessString;
+        return newGuesses;
+      });
+      setCurrentRowIndex(prevIndex => prevIndex + 1);
+      setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
+
+    }, totalAnimationTime);
   };
 
   const handleResetClick = () => {
@@ -158,8 +183,11 @@ export default function Wordle() {
     setCurrentRowIndex(0);
     setGameMessage('');
     setIsGameOver(false);
+    setDialog({ isOpen: false, message: '' }); // ★ダイアログを閉じる
+    setKeyStates({}); // ★キーボードの状態をリセット
     // --- ★追加: リセット時にフリップ状態も初期化
     setFlipStates(Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(false)));
+    setEvaluationStates(Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''))); // ★評価状態もリセット
     setTargetWord(getRandomWord()); // ターゲットワードもリセット
     // ---
   };
@@ -185,13 +213,7 @@ export default function Wordle() {
                 let tileStateClass = ''; // タイルの状態に応じた背景色
                 if (rowIndex < currentRowIndex) {
                   // 確定済みの行
-                  if (char.toUpperCase() === targetWord[charIndex].toUpperCase()) {
-                    tileStateClass = 'bg-green-700'; // 正解の文字
-                  } else if (targetWord.toUpperCase().includes(char.toUpperCase()) && char !== '') {
-                    tileStateClass = 'bg-yellow-500'; // 含まれているが位置が違う
-                  } else if (char !== '') {
-                    tileStateClass = 'bg-gray-700'; // 含まれていない文字
-                  }
+                  tileStateClass = evaluationStates[rowIndex][charIndex];
                 } else if (rowIndex === currentRowIndex && char !== '') {
                   // 入力中の文字
                   tileStateClass = 'bg-blue-700';
@@ -211,7 +233,6 @@ export default function Wordle() {
                     key={charIndex}
                     // ★フリップのラッパー
                     className={`flip-card ${flipStates[rowIndex][charIndex] ? 'flipped' : ''}`}
-                    style={{ animationDelay: `${charIndex * 150}ms` }} // 各タイルを少しずつ遅延させてフリップ
                   >
                     <div className="flip-card-inner">
                       {/* フロント面 */}
@@ -223,7 +244,7 @@ export default function Wordle() {
                         {char}
                       </div>
                       {/* バック面 (正解判定後の色が付く) */}
-                      <div className={`flip-card-back ${commonTileClasses} ${tileStateClass}`}>
+                      <div className={`flip-card-back ${commonTileClasses} ${evaluationStates[rowIndex][charIndex]}`}>
                         {char}
                       </div>
                     </div>
@@ -251,29 +272,33 @@ export default function Wordle() {
       </div>
 
       {/* AlphabetButtonのグループ（キーボード部分） */}
-      <div className="flex justify-center flex-col items-center">
-        <div className="flex justify-center gap-2 flex-wrap mb-4">
+      <div className="flex justify-center flex-col items-center space-y-2"> {/* space-y-2で行間を追加 */}
+        <div className="flex justify-center gap-2 flex-wrap">
           {'QWERTYUIOP'.split('').map(label => (
-            <AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} />
+            <AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} />
           ))}
         </div>
-      </div>
-
-      <div className="flex justify-center flex-col items-center">
-        <div className="flex justify-center gap-2 flex-wrap mb-4">
+        <div className="flex justify-center gap-2 flex-wrap">
           {'ASDFGHJKL'.split('').map(label => (
-            <AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} />
+            <AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} />
+          ))}
+        </div>
+        <div className="flex justify-center gap-2 flex-wrap">
+          {'ZXCVBNM'.split('').map(label => (
+            <AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} />
           ))}
         </div>
       </div>
 
-      <div className="flex justify-center flex-col items-center">
-        <div className="flex justify-center gap-2 flex-wrap mb-4">
-          {'ZXCVBNM'.split('').map(label => (
-            <AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} />
-          ))}
+      {/* ★追加: フラッシュダイアログ */}
+      {dialog.isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 text-white p-8 rounded-lg shadow-xl text-center">
+            <h3 className="text-2xl font-bold mb-6">{dialog.message}</h3>
+            <AlphabetButton label="もう一度プレイ" onButtonClick={handleResetClick} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
