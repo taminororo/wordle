@@ -14,22 +14,33 @@ interface CascadingWordData {
   x: string;
 }
 
+interface BackgroundCascadeProps {
+  yellowLetters: string[];
+}
+
 // Wordleゲームのルールとは独立した定義
 const NUMBER_OF_LETTERS_PER_GUESS = 5; // 背景に流す単語の文字数も指定できるようにする
 
-export default function BackgroundCascade() {
+export default function BackgroundCascade({ yellowLetters }: BackgroundCascadeProps) {
   // コンポーネント内部でHooksを宣言
   const [cascadingWords, setCascadingWords] = useState<CascadingWordData[]>([]);
   const nextCascadeWordId = useRef(0); // IDの初期値を1000に設定（適宜変更可能）
 
   // 単語を生成してリストに追加する関数
   const addCascadingWord = () => {
-    console.log('addCascadingWord called');
-    // 5文字の単語のみを選択する場合
-    const fiveLetterWords = WORD_LIST.filter(word => word.length === NUMBER_OF_LETTERS_PER_GUESS);
-    if (fiveLetterWords.length === 0) return;
+    // ★変更: 黄色文字リストに基づいて単語プールをフィルタリング
+    let wordPool = WORD_LIST.filter(word => word.length === NUMBER_OF_LETTERS_PER_GUESS);
 
-    const randomWord = fiveLetterWords[Math.floor(Math.random() * fiveLetterWords.length)];
+    if (yellowLetters.length > 0) {
+      const yellowLettersLower = yellowLetters.map(l => l.toLowerCase());
+      wordPool = wordPool.filter(word => 
+        yellowLettersLower.every(yellowChar => word.includes(yellowChar))
+      );
+    }
+
+    if (wordPool.length === 0) return; // 該当する単語がなければ何もしない
+
+    const randomWord = wordPool[Math.floor(Math.random() * wordPool.length)];
     const duration = Math.random() * 5 + 5; // 5秒から10秒の間でランダム
     //onst duration = 10; // 3秒から5秒の間でランダム
     const delay = Math.random() * 0; // 0秒から2秒の間でランダムな遅延
@@ -64,7 +75,7 @@ export default function BackgroundCascade() {
 
     const interval = setInterval(addCascadingWord, 1000); // 1秒ごとに新しい単語を生成
     return () => clearInterval(interval); // コンポーネントがアンマウントされたときにタイマーをクリーンアップ
-  }, []); // 空の依存配列なので、初回マウント時のみ実行
+  }, [yellowLetters]); // ★修正: yellowLettersが変更されたらエフェクトを再実行する
 
   // BackgroundCascade.tsx (修正案)
 

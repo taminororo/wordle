@@ -14,7 +14,11 @@ const getRandomWord = (): string => {
   return WORD_LIST[randomIndex].toUpperCase();
 }
 
-export default function Wordle() {
+interface WordleProps {
+  onYellowLettersChange: (letters: string[]) => void;
+}
+
+export default function Wordle({ onYellowLettersChange }: WordleProps) {
   const [guesses, setGuesses] = useState<string[]>(Array(NUMBER_OF_GUESS_ROWS).fill(''));
   const [currentGuess, setCurrentGuess] = useState<string[]>(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
   const [currentRowIndex, setCurrentRowIndex] = useState(0);
@@ -149,6 +153,16 @@ export default function Wordle() {
         }
       });
       setKeyStates(newKeyStates);
+
+      // --- ★追加: 黄色になった文字を親コンポーネントに通知
+      const yellowChars = newEvaluation.map((color, index) => {
+        if (color === 'bg-yellow-500') {
+          return currentGuess[index].toUpperCase();
+        }
+        return null;
+      }).filter((char): char is string => char !== null);
+      onYellowLettersChange(yellowChars);
+      // ---
       // ---
 
       if (currentGuessString.toUpperCase() === targetWord.toUpperCase()) {
@@ -184,6 +198,7 @@ export default function Wordle() {
     setIsGameOver(false);
     setDialog({ isOpen: false, message: '' }); // ★ダイアログを閉じる
     setKeyStates({}); // ★キーボードの状態をリセット
+    onYellowLettersChange([]); // ★親の黄色文字リストをリセット
     // --- ★追加: リセット時にフリップ状態も初期化
     setFlipStates(Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(false)));
     setEvaluationStates(Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''))); // ★評価状態もリセット
