@@ -116,24 +116,6 @@ export default function Wordle() {
       return newStates;
     });
 
-    // --- ★追加: キーボードの状態を更新
-    const newKeyStates = { ...keyStates };
-    newEvaluation.forEach((color, index) => {
-      const char = currentGuess[index].toUpperCase();
-      const currentColor = newKeyStates[char];
-
-      // 緑は最優先、次に黄色、最後に灰色
-      if (currentColor !== 'bg-green-700') {
-        if (color === 'bg-green-700' || (color === 'bg-yellow-500' && currentColor !== 'bg-yellow-500')) {
-          newKeyStates[char] = color;
-        } else if (!currentColor) {
-          newKeyStates[char] = color;
-        }
-      }
-    });
-    setKeyStates(newKeyStates);
-    // ---
-
     // --- ★変更: フリップアニメーションを順番にトリガー
     for (let i = 0; i < NUMBER_OF_LETTERS_PER_GUESS; i++) {
       setTimeout(() => {
@@ -146,12 +128,29 @@ export default function Wordle() {
         });
       }, i * 150); // 150msずつ遅延させてフリップ
     }
-    // ---
 
     // --- ★変更: フリップアニメーションの完了後にゲーム終了処理を行う
     const totalAnimationTime = (NUMBER_OF_LETTERS_PER_GUESS - 1) * 150 + 600; // (最後のタイル遅延 + アニメーション時間)
 
     setTimeout(() => {
+      // --- ★追加: キーボードの状態を更新
+      const newKeyStates = { ...keyStates };
+      newEvaluation.forEach((color, index) => {
+        const char = currentGuess[index].toUpperCase();
+        const currentColor = newKeyStates[char];
+
+        // 緑は最優先、次に黄色、最後に灰色
+        if (currentColor !== 'bg-green-700') {
+          if (color === 'bg-green-700' || (color === 'bg-yellow-500' && currentColor !== 'bg-yellow-500')) {
+            newKeyStates[char] = color;
+          } else if (!currentColor) {
+            newKeyStates[char] = color;
+          }
+        }
+      });
+      setKeyStates(newKeyStates);
+      // ---
+
       if (currentGuessString.toUpperCase() === targetWord.toUpperCase()) {
         // 正解の場合
         setDialog({ isOpen: true, message: `正解です！「${targetWord}」` });
