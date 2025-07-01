@@ -9,9 +9,9 @@ const NUMBER_OF_LETTERS_PER_GUESS = 5;
 //const TARGET_WORD = 'REACT';
 const NUMBER_OF_GUESS_ROWS = 5;
 // --- ★追加: ターゲットワードをランダムに選ぶ
-const getRandomWord = (): string => {
+const getRandomWord = (): { en: string, ja: string } => {
   const randomIndex = Math.floor(Math.random() * WORD_LIST.length);
-  return WORD_LIST[randomIndex].toUpperCase();
+  return WORD_LIST[randomIndex];
 }
 
 interface WordleProps {
@@ -29,6 +29,10 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
   // --- ★追加: ダイアログの状態を管理
   const [dialog, setDialog] = useState({ isOpen: false, message: '' });
 
+  // --- ★追加: 連続正解数とゲーム状態を管理
+  const [winStreak, setWinStreak] = useState(0);
+  const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
+
   // --- ★追加: キーボードの各キーの色を管理するState
   const [keyStates, setKeyStates] = useState<{[key: string]: string}>({});
 
@@ -37,8 +41,9 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
     Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(false))
   );
   // ---
-  // --- ★追加: ターゲットワードをランダムに設定
-  const [targetWord, setTargetWord] = useState(getRandomWord());
+  // --- ★変更: ターゲットワードをオブジェクトとして管理
+  const [targetWordObj, setTargetWordObj] = useState(getRandomWord());
+  const targetWord = targetWordObj.en.toUpperCase(); // 評価用の英語単語
 
   // --- ★追加: 各タイルの評価状態（色）を管理するState
   const [evaluationStates, setEvaluationStates] = useState<string[][]>(
@@ -104,16 +109,38 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
       return;
     }
 
-    // --- ★変更: 先に評価を行い、結果をStateに保存
-    const newEvaluation = currentGuess.map((char, index) => {
-      if (char.toUpperCase() === targetWord[index].toUpperCase()) {
-        return 'bg-green-700'; // 正解
-      } else if (targetWord.toUpperCase().includes(char.toUpperCase())) {
-        return 'bg-yellow-500'; // 含まれているが位置が違う
-      } else {
-        return 'bg-gray-700'; // 含まれていない
+    // --- ★変更: 正確な重複文字処理のため、評価ロジックを2段階に変更
+    const newEvaluation = Array(NUMBER_OF_LETTERS_PER_GUESS).fill('');
+    const targetLetters = targetWord.toUpperCase().split(''); // ターゲットの文字を配列に
+    const guessLetters = currentGuess.map(c => c.toUpperCase()); // 推測の文字を配列に
+
+    // Pass 1: 緑色のタイルを特定
+    guessLetters.forEach((char, index) => {
+      if (char === targetLetters[index]) {
+        newEvaluation[index] = 'bg-green-700';
+        targetLetters[index] = ''; // この文字は「使用済み」としてマーク
       }
     });
+
+    // Pass 2: 黄色のタイルを特定
+    guessLetters.forEach((char, index) => {
+      // すでに緑色として評価済みのタイルはスキップ
+      if (newEvaluation[index] === '') {
+        const yellowIndex = targetLetters.indexOf(char);
+        if (yellowIndex !== -1) {
+          newEvaluation[index] = 'bg-yellow-500';
+          targetLetters[yellowIndex] = ''; // この文字も「使用済み」としてマーク
+        }
+      }
+    });
+
+    // Pass 3: 残りを灰色のタイルに
+    newEvaluation.forEach((color, index) => {
+      if (color === '') {
+        newEvaluation[index] = 'bg-gray-700';
+      }
+    });
+    // ---
 
     setEvaluationStates(prev => {
       const newStates = [...prev];
@@ -178,12 +205,16 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
 
       if (currentGuessString.toUpperCase() === targetWord.toUpperCase()) {
         // 正解の場合
-        setDialog({ isOpen: true, message: `正解です！「${targetWord}」` });
+        setDialog({ isOpen: true, message: `正解！\n「${targetWord}」は「${targetWordObj.ja}」です` });
         setIsGameOver(true);
+        setWinStreak(prev => prev + 1); // ★連続正解数を増やす
+        setGameStatus('won'); // ★ゲーム状態を「勝ち」に
       } else if (currentRowIndex + 1 >= NUMBER_OF_GUESS_ROWS) {
         // ゲームオーバーの場合
-        setDialog({ isOpen: true, message: `ゲームオーバーです。「${targetWord}」が正解でした。` });
+        setDialog({ isOpen: true, message: `残念！正解は「${targetWord}」\n意味: ${targetWordObj.ja}` });
         setIsGameOver(true);
+        setWinStreak(0); // ★連続正解数をリセット
+        setGameStatus('lost'); // ★ゲーム状態を「負け」に
       } else {
         // ゲーム続行の場合
         //setGameMessage('不正解です。もう一度試してください。');
@@ -202,6 +233,11 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
   };
 
   const handleResetClick = () => {
+    // ★ゲームを途中でリセットした場合、連勝をリセット
+    if (gameStatus === 'playing') {
+      setWinStreak(0);
+    }
+
     setGuesses(Array(NUMBER_OF_GUESS_ROWS).fill(''));
     setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
     setCurrentRowIndex(0);
@@ -211,6 +247,8 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
     setKeyStates({}); // ★キーボードの状態をリセット
     onYellowLettersChange([]); // ★親の黄色文字リストをリセット
     onGreenLettersChange([]); // ★親の緑文字リストをリセット
+    setGameStatus('playing'); // ★ゲーム状態を「プレイ中」に戻す
+    setTargetWordObj(getRandomWord()); // ★新しい単語オブジェクトを設定
     // --- ★追加: リセット時にフリップ状態も初期化
     setFlipStates(Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(false)));
     setEvaluationStates(Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''))); // ★評価状態もリセット
@@ -221,6 +259,10 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
   return (
     <div className="p-5 border border-gray-300 rounded-lg max-w-4xl mx-auto text-center my-5">
       <h2 className="text-2xl font-bold mb-4">5文字を当てようゲーム</h2>
+      {/* ★追加: 連続正解数カウンター */}
+      <div className="mb-4">
+        <p className="text-lg">連続正解: <span className="font-bold">{winStreak}</span></p>
+      </div>
 
       {/* 各推測行の表示エリア */}
       <div className="space-y-3 mb-5">
@@ -320,7 +362,7 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
       {dialog.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 text-white p-8 rounded-lg shadow-xl text-center">
-            <h3 className="text-2xl font-bold mb-6">{dialog.message}</h3>
+            <h3 className="text-2xl font-bold mb-6 whitespace-pre-wrap">{dialog.message}</h3>
             <AlphabetButton label="もう一度プレイ" onButtonClick={handleResetClick} />
           </div>
         </div>

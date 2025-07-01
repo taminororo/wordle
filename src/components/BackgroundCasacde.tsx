@@ -30,26 +30,27 @@ export default function BackgroundCascade({ yellowLetters, greenLetters }: Backg
   // 単語を生成してリストに追加する関数
   const addCascadingWord = () => {
     // ★変更: 黄色と緑の文字リストに基づいて単語プールをフィルタリング
-    let wordPool = WORD_LIST.filter(word => word.length === NUMBER_OF_LETTERS_PER_GUESS);
+    let wordPool = WORD_LIST.filter(wordObj => wordObj.en.length === NUMBER_OF_LETTERS_PER_GUESS);
 
     // 緑文字の条件でフィルタリング
     if (greenLetters.length > 0) {
-      wordPool = wordPool.filter(word => 
-        greenLetters.every(green => word[green.index].toLowerCase() === green.char.toLowerCase())
+      wordPool = wordPool.filter(wordObj => 
+        greenLetters.every(green => wordObj.en[green.index].toLowerCase() === green.char.toLowerCase())
       );
     }
 
     // 黄色文字の条件でフィルタリング
     if (yellowLetters.length > 0) {
       const yellowLettersLower = yellowLetters.map(l => l.toLowerCase());
-      wordPool = wordPool.filter(word => 
-        yellowLettersLower.every(yellowChar => word.includes(yellowChar))
+      wordPool = wordPool.filter(wordObj => 
+        yellowLettersLower.every(yellowChar => wordObj.en.toLowerCase().includes(yellowChar))
       );
     }
 
     if (wordPool.length === 0) return; // 該当する単語がなければ何もしない
 
-    const randomWord = wordPool[Math.floor(Math.random() * wordPool.length)];
+    const randomWordObj = wordPool[Math.floor(Math.random() * wordPool.length)];
+    const randomWord = randomWordObj.en;
     const duration = Math.random() * 5 + 5; // 5秒から10秒の間でランダム
     //onst duration = 10; // 3秒から5秒の間でランダム
     const delay = Math.random() * 0; // 0秒から2秒の間でランダムな遅延
