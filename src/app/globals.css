@@ -225,7 +225,6 @@ font-family: Arial, Helvetica, sans-serif;
   font-size: 2rem; /* 大きめのフォントサイズ */
   color: rgba(255, 255, 255, 1.0); /* 薄い色で背景感を出す */
   pointer-events: none; /* クリックなどのイベントを透過させる */
-  z-index: -1; /* 他のUI要素の下に配置 */
 
   /* アニメーションの適用。 duration, delay, timing-function はJSで動的に設定することも可能 */
   animation: wordCascade var(--animation-duration, 5s) linear forwards;

@@ -5,35 +5,54 @@ import Wordle from '../components/Wordle';
 import BackgroundCascade from '../components/BackgroundCasacde';
 
 export default function MyApp() {
-  // ★変更: 黄色判定された文字のリストを管理するState（変更なし）
   const [yellowLetters, setYellowLetters] = useState<string[]>([]);
+  // ★追加: 緑判定された文字と位置を管理するState
+  const [greenLetters, setGreenLetters] = useState<{char: string, index: number}[]>([]);
 
-  // ★追加: 黄色文字を蓄積して更新するハンドラ
   const handleYellowLettersChange = (newLetters: string[]) => {
     if (newLetters.length === 0) {
-      // リセットの場合
       setYellowLetters([]);
       return;
     }
-    // 新しい文字を既存のリストと結合し、重複を削除
     setYellowLetters(prevLetters => {
       const combined = new Set([...prevLetters, ...newLetters]);
       return Array.from(combined);
     });
   };
 
+  // ★追加: 緑文字を蓄積して更新するハンドラ
+  const handleGreenLettersChange = (newLetters: {char: string, index: number}[]) => {
+    if (newLetters.length === 0) {
+      setGreenLetters([]);
+      return;
+    }
+    setGreenLetters(prevLetters => {
+      const combined = [...prevLetters];
+      newLetters.forEach(newLetter => {
+        // 同じ位置の文字が既に存在しないか確認
+        if (!combined.some(prev => prev.index === newLetter.index)) {
+          combined.push(newLetter);
+        }
+      });
+      return combined;
+    });
+  };
+
   return (
     <div className="relative min-h-screen bg-gray-900 text-white">
-      {/* yellowLettersをプロパティとして渡す（変更なし） */}
-      <BackgroundCascade yellowLetters={yellowLetters} />
+      {/* ★修正: greenLettersもプロパティとして渡す */}
+      <BackgroundCascade yellowLetters={yellowLetters} greenLetters={greenLetters} />
 
       <div className="container mx-auto mt-8 relative z-10">
         <section className="mb-8">
           <h2 className="text-xl font-bold mb-4">Wordle</h2>
           <div className="font-sans text-center p-5">
             <h1 className="text-3xl font-bold mb-8">wordle</h1>
-            {/* ★修正: 新しいハンドラを渡す */}
-            <Wordle onYellowLettersChange={handleYellowLettersChange} />
+            {/* ★修正: 新しいハンドラも渡す */}
+            <Wordle 
+              onYellowLettersChange={handleYellowLettersChange} 
+              onGreenLettersChange={handleGreenLettersChange} 
+            />
           </div>
         </section>
       </div>

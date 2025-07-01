@@ -16,9 +16,10 @@ const getRandomWord = (): string => {
 
 interface WordleProps {
   onYellowLettersChange: (letters: string[]) => void;
+  onGreenLettersChange: (letters: {char: string, index: number}[]) => void;
 }
 
-export default function Wordle({ onYellowLettersChange }: WordleProps) {
+export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: WordleProps) {
   const [guesses, setGuesses] = useState<string[]>(Array(NUMBER_OF_GUESS_ROWS).fill(''));
   const [currentGuess, setCurrentGuess] = useState<string[]>(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
   const [currentRowIndex, setCurrentRowIndex] = useState(0);
@@ -162,6 +163,16 @@ export default function Wordle({ onYellowLettersChange }: WordleProps) {
         return null;
       }).filter((char): char is string => char !== null);
       onYellowLettersChange(yellowChars);
+
+      // --- ★追加: 緑になった文字と位置を親コンポーネントに通知
+      const greenChars = newEvaluation.map((color, index) => {
+        if (color === 'bg-green-700') {
+          return { char: currentGuess[index].toUpperCase(), index };
+        }
+        return null;
+      }).filter((item): item is {char: string, index: number} => item !== null);
+      onGreenLettersChange(greenChars);
+      // ---
       // ---
       // ---
 
@@ -199,6 +210,7 @@ export default function Wordle({ onYellowLettersChange }: WordleProps) {
     setDialog({ isOpen: false, message: '' }); // ★ダイアログを閉じる
     setKeyStates({}); // ★キーボードの状態をリセット
     onYellowLettersChange([]); // ★親の黄色文字リストをリセット
+    onGreenLettersChange([]); // ★親の緑文字リストをリセット
     // --- ★追加: リセット時にフリップ状態も初期化
     setFlipStates(Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(false)));
     setEvaluationStates(Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''))); // ★評価状態もリセット

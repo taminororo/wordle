@@ -16,21 +16,30 @@ interface CascadingWordData {
 
 interface BackgroundCascadeProps {
   yellowLetters: string[];
+  greenLetters: {char: string, index: number}[];
 }
 
 // Wordleゲームのルールとは独立した定義
 const NUMBER_OF_LETTERS_PER_GUESS = 5; // 背景に流す単語の文字数も指定できるようにする
 
-export default function BackgroundCascade({ yellowLetters }: BackgroundCascadeProps) {
+export default function BackgroundCascade({ yellowLetters, greenLetters }: BackgroundCascadeProps) {
   // コンポーネント内部でHooksを宣言
   const [cascadingWords, setCascadingWords] = useState<CascadingWordData[]>([]);
   const nextCascadeWordId = useRef(0); // IDの初期値を1000に設定（適宜変更可能）
 
   // 単語を生成してリストに追加する関数
   const addCascadingWord = () => {
-    // ★変更: 黄色文字リストに基づいて単語プールをフィルタリング
+    // ★変更: 黄色と緑の文字リストに基づいて単語プールをフィルタリング
     let wordPool = WORD_LIST.filter(word => word.length === NUMBER_OF_LETTERS_PER_GUESS);
 
+    // 緑文字の条件でフィルタリング
+    if (greenLetters.length > 0) {
+      wordPool = wordPool.filter(word => 
+        greenLetters.every(green => word[green.index].toLowerCase() === green.char.toLowerCase())
+      );
+    }
+
+    // 黄色文字の条件でフィルタリング
     if (yellowLetters.length > 0) {
       const yellowLettersLower = yellowLetters.map(l => l.toLowerCase());
       wordPool = wordPool.filter(word => 
@@ -68,20 +77,15 @@ export default function BackgroundCascade({ yellowLetters }: BackgroundCascadePr
 
   // コンポーネントマウント時に定期的に単語を生成
   useEffect(() => {
-    // //初期単語をいくつか表示したい場合は、ここで何度か addCascadingWord() を呼び出す
-    // for (let i = 0; i < 10; i++) {
-    //   addCascadingWord(); // 初期表示数を調整
-    // }
-
     const interval = setInterval(addCascadingWord, 1000); // 1秒ごとに新しい単語を生成
     return () => clearInterval(interval); // コンポーネントがアンマウントされたときにタイマーをクリーンアップ
-  }, [yellowLetters]); // ★修正: yellowLettersが変更されたらエフェクトを再実行する
+  }, [yellowLetters, greenLetters]); // ★修正: greenLettersも依存配列に追加
 
   // BackgroundCascade.tsx (修正案)
 
 return (
   // 'overflow-hidden' を削除
-  <div className="absolute inset-0 pointer-events-none z-0">
+  <div className="absolute inset-0 pointer-events-none z-20">
     {cascadingWords.map(wordData => (
       <div
         key={wordData.id}
