@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import {WORD_LIST} from "../utils/words";
+import {WORD_LIST} from "../utils/translatedWords";
 import AlphabetButton from './AlphabetButtons';
 
 // 定義はそのまま

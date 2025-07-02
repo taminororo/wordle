@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 // AlphabetButton はこのコンポーネントでは使わないので削除
-import { WORD_LIST } from '@/utils/words'; // パスはプロジェクトに合わせて適宜変更してください
-
+//import { WORD_LIST } from '@/utils/translatedWords'; // パスはプロジェクトに合わせて適宜変更してください
+// 完成した単語リストを直接インポートする
+import WORD_LIST from '../data/combined_word_list.json' with { type: 'json' };
 // BackgroundCascade.tsx (抜粋)
 
 interface CascadingWordData {
