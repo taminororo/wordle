@@ -1,7 +1,7 @@
 'use client';
 
 // 1. useMemo を React からインポート
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import WORD_LIST from '../data/combined_word_list.json';
 import AlphabetButton from './AlphabetButtons';
 import ResultModal from './ResultModal'; 
@@ -20,10 +20,12 @@ const getRandomWord = (): string => {
 interface WordleProps {
   onYellowLettersChange: (letters: string[]) => void;
   onGreenLettersChange: (letters: {char: string, index: number}[]) => void;
+  streakCount: number; // ★ 親からstreakCountを受け取る
+  onGameEnd: (isSuccess: boolean) => void; // ★ ゲーム終了を親に通知する
 }
 
 
-export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: WordleProps) {
+export default function Wordle({ onYellowLettersChange, onGreenLettersChange, streakCount, onGameEnd }: WordleProps) {
   // ...（Stateの定義は変更なし）
   const [guesses, setGuesses] = useState<string[]>(Array(NUMBER_OF_GUESS_ROWS).fill(''));
   const [currentGuess, setCurrentGuess] = useState<string[]>(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
@@ -62,27 +64,40 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
   }, []);
 
 
-  const handleEnterClick = () => {
-    if (isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) {
-      setGameMessage('ゲームは終了しました。Resetを押してください。');
-      return;
+  const handleButtonClick = useCallback((buttonLabel: string) => {
+    if (!targetWord || isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) return;
+
+    const currentLettersCount = currentGuess.filter(char => char !== '').length;
+    if (currentLettersCount >= NUMBER_OF_LETTERS_PER_GUESS && buttonLabel !== 'Backspace') return;
+
+    if (buttonLabel === 'Backspace') {
+      setCurrentGuess(prev => {
+        const newGuess = [...prev];
+        for (let i = newGuess.length - 1; i >= 0; i--) if (newGuess[i] !== '') { newGuess[i] = ''; break; }
+        return newGuess;
+      });
+    } else {
+      setCurrentGuess(prev => {
+        const newGuess = [...prev];
+        for (let i = 0; i < newGuess.length; i++) if (newGuess[i] === '') { newGuess[i] = buttonLabel; break; }
+        return newGuess;
+      });
     }
+    setGameMessage('');
+  }, [currentGuess, isGameOver, currentRowIndex, targetWord]);
 
+  const handleEnterClick = useCallback(() => {
+    if (isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) return;
     const currentGuessString = currentGuess.filter(char => char !== '').join('');
-
     if (currentGuessString.length !== NUMBER_OF_LETTERS_PER_GUESS) {
       setGameMessage(`${NUMBER_OF_LETTERS_PER_GUESS}文字入力してください！`);
       return;
     }
-
-    // --- ▼▼ ここから単語リストの検証ロジックを追加 ▼▼ ---
     if (!validWordSet.has(currentGuessString.toLowerCase())) {
       setGameMessage('その単語はリストにありません');
-      return; // リストにない場合はここで処理を中断
+      return;
     }
-    // --- ▲▲ ここまで ▲▲ ---
-
-    // ...（以降の色判定ロジックは変更なし）
+    
     const guessUpper = currentGuess.map(c => c.toUpperCase());
     const targetUpper = targetWord.toUpperCase();
     const newEvaluation = Array(NUMBER_OF_LETTERS_PER_GUESS).fill('');
@@ -137,9 +152,11 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
       if (currentGuessString.toUpperCase() === targetWord.toUpperCase()) {
         setIsSuccess(true);
         setIsGameOver(true);
+        onGameEnd(true); // ★ 親に成功を通知
       } else if (currentRowIndex + 1 >= NUMBER_OF_GUESS_ROWS) {
         setIsSuccess(false);
         setIsGameOver(true);
+        onGameEnd(false); // ★ 親に失敗を通知
       }
       setGuesses(prev => {
         const newGuesses = [...prev];
@@ -149,30 +166,9 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
       setCurrentRowIndex(prev => prev + 1);
       setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
     }, totalAnimationTime);
-  };
-  
-  // ...（他の関数やJSXは変更なし）
-  const handleButtonClick = (buttonLabel: string) => {
-    if (!targetWord || isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) return;
-    const currentLettersCount = currentGuess.filter(char => char !== '').length;
-    if (currentLettersCount >= NUMBER_OF_LETTERS_PER_GUESS && buttonLabel !== 'Backspace') return;
-    if (buttonLabel === 'Backspace') {
-      setCurrentGuess(prev => {
-        const newGuess = [...prev];
-        for (let i = newGuess.length - 1; i >= 0; i--) if (newGuess[i] !== '') { newGuess[i] = ''; break; }
-        return newGuess;
-      });
-    } else {
-      setCurrentGuess(prev => {
-        const newGuess = [...prev];
-        for (let i = 0; i < newGuess.length; i++) if (newGuess[i] === '') { newGuess[i] = buttonLabel; break; }
-        return newGuess;
-      });
-    }
 
-    setGameMessage('');
+  }, [currentGuess, currentRowIndex, isGameOver, keyStates, onGreenLettersChange, onYellowLettersChange, targetWord, validWordSet]);
 
-  };
   const handleResetClick = () => {
     setGuesses(Array(NUMBER_OF_GUESS_ROWS).fill(''));
     setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
@@ -189,19 +185,34 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
     setTargetWord(getRandomWord());
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (isGameOver) return;
 
-  // 2. このヘルパー関数は不要なので削除
-  /*
-  const getTranslatedWord = (word: string): string => {
-    return translations[word.toLowerCase()] || '翻訳が見つかりません';
-    return (translations as Translations)[word.toLowerCase()] || '翻訳が見つかりません';
-  };
-  */
+      if (event.key === 'Enter') {
+        handleEnterClick();
+      } else if (event.key === 'Backspace') {
+        handleButtonClick('Backspace');
+      } else if (/^[a-zA-Z]$/.test(event.key)) {
+        handleButtonClick(event.key.toUpperCase());
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleButtonClick, handleEnterClick, isGameOver]);
 
   return (
     <div className="p-5 border border-gray-300 rounded-lg max-w-4xl mx-auto text-center my-5">
-      <h2 className="text-2xl font-bold mb-4">5文字を当てようゲーム</h2>
-
+      {/* ★ ヘッダー部分をFlexboxでレイアウト */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">5文字を当てようゲーム</h2>
+        <div className="text-lg font-semibold">
+          <span role="img" aria-label="fire">🔥</span> 連続正解: {streakCount}
+        </div>
+      </div>
 
       <div className="space-y-3 mb-5">
         {Array.from({ length: NUMBER_OF_GUESS_ROWS }).map((_, rowIndex) => (
@@ -226,14 +237,14 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
       </div>
       {gameMessage && <div className="mt-4 p-3 bg-yellow-500 text-black rounded-md font-bold text-lg">{gameMessage}</div>}
       <div className="flex justify-center gap-4 mt-5 mb-8">
-        <AlphabetButton label="Enter" onButtonClick={handleEnterClick} />
+        <AlphabetButton label="Enter" onButtonClick={handleEnterClick} disabled={true} />
         <AlphabetButton label="Reset" onButtonClick={handleResetClick} />
-        <AlphabetButton label="Backspace" onButtonClick={() => handleButtonClick('Backspace')} />
+        <AlphabetButton label="Backspace" onButtonClick={() => handleButtonClick('Backspace')} disabled={true} />
       </div>
       <div className="flex justify-center flex-col items-center space-y-2">
-        <div className="flex justify-center gap-2 flex-wrap">{'QWERTYUIOP'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} />))}</div>
-        <div className="flex justify-center gap-2 flex-wrap">{'ASDFGHJKL'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} />))}</div>
-        <div className="flex justify-center gap-2 flex-wrap">{'ZXCVBNM'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} />))}</div>
+        <div className="flex justify-center gap-2 flex-wrap">{'QWERTYUIOP'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} disabled={true} />))}</div>
+        <div className="flex justify-center gap-2 flex-wrap">{'ASDFGHJKL'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} disabled={true} />))}</div>
+        <div className="flex justify-center gap-2 flex-wrap">{'ZXCVBNM'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} disabled={true} />))}</div>
       </div>
 
 
