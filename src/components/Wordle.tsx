@@ -57,33 +57,81 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
   );
 
   // handleButtonClick, handleEnterClick, handleResetClick の中身は変更なし...
+// Wordle.tsx
+
   const handleEnterClick = () => {
-    // ...関数の内容は変更なし
-    if (isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) return;
+    if (isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) {
+      setGameMessage('ゲームは終了しました。Resetを押してください。');
+      return;
+    }
+
     const currentGuessString = currentGuess.filter(char => char !== '').join('');
+
     if (currentGuessString.length !== NUMBER_OF_LETTERS_PER_GUESS) {
       setGameMessage(`${NUMBER_OF_LETTERS_PER_GUESS}文字入力してください！`);
       return;
     }
-    const newEvaluation = currentGuess.map((char, index) => {
-      if (char.toUpperCase() === targetWord[index].toUpperCase()) return 'bg-green-700';
-      if (targetWord.toUpperCase().includes(char.toUpperCase())) return 'bg-yellow-500';
-      return 'bg-gray-700';
+
+    // --- ▼▼ ここから色判定ロジックを修正 ▼▼ ---
+
+    const guessUpper = currentGuess.map(c => c.toUpperCase());
+    const targetUpper = targetWord.toUpperCase();
+    const newEvaluation = Array(NUMBER_OF_LETTERS_PER_GUESS).fill('');
+    
+    // 判定に使うため、正解の単語の文字を一時的な配列に入れる
+    const targetLetterPool = targetUpper.split('');
+
+    // 【ステップ1】まず「緑」の判定を先に行う
+    guessUpper.forEach((char, index) => {
+      if (char === targetUpper[index]) {
+        newEvaluation[index] = 'bg-green-700'; // 緑に設定
+        targetLetterPool[index] = ''; // マッチした文字をプールから消費する
+      }
     });
+
+    // 【ステップ2】次に「黄色」と「灰色」を判定する
+    guessUpper.forEach((char, index) => {
+      // 既に緑の場合はスキップ
+      if (newEvaluation[index] === 'bg-green-700') {
+        return;
+      }
+
+      // プールに文字が存在するかチェック
+      const yellowIndex = targetLetterPool.indexOf(char);
+      if (yellowIndex !== -1) {
+        newEvaluation[index] = 'bg-yellow-500'; // 黄色に設定
+        targetLetterPool[yellowIndex] = ''; // マッチした文字をプールから消費する
+      } else {
+        newEvaluation[index] = 'bg-gray-700'; // 灰色に設定
+      }
+    });
+
+    // --- ▲▲ 色判定ロジックの修正ここまで ▲▲ ---
+
+
+    // 判定後のState更新処理は変更なし
     setEvaluationStates(prev => {
       const newStates = [...prev];
       newStates[currentRowIndex] = newEvaluation;
       return newStates;
     });
+
     for (let i = 0; i < NUMBER_OF_LETTERS_PER_GUESS; i++) {
-      setTimeout(() => setFlipStates(prev => {
-        const newStates = [...prev];
-        if (newStates[currentRowIndex]) newStates[currentRowIndex][i] = true;
-        return newStates;
-      }), i * 150);
+      setTimeout(() => {
+        setFlipStates(prev => {
+          const newFlipStates = [...prev];
+          if (newFlipStates[currentRowIndex]) {
+            newFlipStates[currentRowIndex][i] = true;
+          }
+          return newFlipStates;
+        });
+      }, i * 150);
     }
+
     const totalAnimationTime = (NUMBER_OF_LETTERS_PER_GUESS - 1) * 150 + 600;
+
     setTimeout(() => {
+      // ...この後のキーボードの色更新やゲーム終了判定のロジックは変更ありません...
       const newKeyStates = { ...keyStates };
       newEvaluation.forEach((color, index) => {
         const char = currentGuess[index].toUpperCase();
@@ -97,23 +145,38 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
         }
       });
       setKeyStates(newKeyStates);
-      const yellowChars = newEvaluation.map((color, index) => color === 'bg-yellow-500' ? currentGuess[index].toUpperCase() : null).filter((char): char is string => char !== null);
+
+      const yellowChars = newEvaluation.map((color, index) => {
+        if (color === 'bg-yellow-500') {
+          return currentGuess[index].toUpperCase();
+        }
+        return null;
+      }).filter((char): char is string => char !== null);
       onYellowLettersChange(yellowChars);
-      const greenChars = newEvaluation.map((color, index) => color === 'bg-green-700' ? { char: currentGuess[index].toUpperCase(), index } : null).filter((item): item is {char: string, index: number} => item !== null);
+
+      const greenChars = newEvaluation.map((color, index) => {
+        if (color === 'bg-green-700') {
+          return { char: currentGuess[index].toUpperCase(), index };
+        }
+        return null;
+      }).filter((item): item is {char: string, index: number} => item !== null);
       onGreenLettersChange(greenChars);
+
       if (currentGuessString.toUpperCase() === targetWord.toUpperCase()) {
         setIsSuccess(true);
+
         setIsGameOver(true);
       } else if (currentRowIndex + 1 >= NUMBER_OF_GUESS_ROWS) {
         setIsSuccess(false);
         setIsGameOver(true);
       }
-      setGuesses(prev => {
-        const newGuesses = [...prev];
+
+      setGuesses(prevGuesses => {
+        const newGuesses = [...prevGuesses];
         newGuesses[currentRowIndex] = currentGuessString;
         return newGuesses;
       });
-      setCurrentRowIndex(prev => prev + 1);
+      setCurrentRowIndex(prevIndex => prevIndex + 1);
       setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
     }, totalAnimationTime);
   };
