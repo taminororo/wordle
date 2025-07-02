@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-// 1. 英語と日本語がペアになった combined_word_list.json のみインポートする
+// 1. useMemo を React からインポート
+import React, { useState, useMemo } from 'react';
 import WORD_LIST from '../data/combined_word_list.json';
-// import translations from '../data/translated_words.json'; // ← 不要なので削除
 import AlphabetButton from './AlphabetButtons';
-import ResultModal from './ResultModal';
+import ResultModal from './ResultModal'; 
 
-// 定義はそのまま
+// ...（他の定義は変更なし）
 const NUMBER_OF_LETTERS_PER_GUESS = 5;
 const NUMBER_OF_GUESS_ROWS = 5;
 
@@ -18,22 +17,21 @@ const getRandomWord = (): string => {
 
 }
 
-// 型のエイリアスは不要なので削除
-// type Translations = { [key: string]: string };
-
 interface WordleProps {
   onYellowLettersChange: (letters: string[]) => void;
   onGreenLettersChange: (letters: {char: string, index: number}[]) => void;
 }
 
+
 export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: WordleProps) {
-  // Stateの定義はそのまま...
+  // ...（Stateの定義は変更なし）
   const [guesses, setGuesses] = useState<string[]>(Array(NUMBER_OF_GUESS_ROWS).fill(''));
   const [currentGuess, setCurrentGuess] = useState<string[]>(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
   const [currentRowIndex, setCurrentRowIndex] = useState(0);
   const [gameMessage, setGameMessage] = useState('');
   const [isGameOver, setIsGameOver] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
 
 
   // --- ★追加: ダイアログの状態を管理
@@ -44,6 +42,7 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
   const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
 
   // --- ★追加: キーボードの各キーの色を管理するState
+
 
   const [keyStates, setKeyStates] = useState<{[key: string]: string}>({});
   const [flipStates, setFlipStates] = useState<boolean[][]>(
@@ -56,8 +55,12 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
     Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''))
   );
 
-  // handleButtonClick, handleEnterClick, handleResetClick の中身は変更なし...
-// Wordle.tsx
+
+  // 2. パフォーマンス向上のため、検索用の単語セットを最初に一度だけ作成
+  const validWordSet = useMemo(() => {
+    return new Set(WORD_LIST.map(item => item.originalWord.toLowerCase()));
+  }, []);
+
 
   const handleEnterClick = () => {
     if (isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) {
@@ -72,66 +75,48 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
       return;
     }
 
-    // --- ▼▼ ここから色判定ロジックを修正 ▼▼ ---
+    // --- ▼▼ ここから単語リストの検証ロジックを追加 ▼▼ ---
+    if (!validWordSet.has(currentGuessString.toLowerCase())) {
+      setGameMessage('その単語はリストにありません');
+      return; // リストにない場合はここで処理を中断
+    }
+    // --- ▲▲ ここまで ▲▲ ---
 
+    // ...（以降の色判定ロジックは変更なし）
     const guessUpper = currentGuess.map(c => c.toUpperCase());
     const targetUpper = targetWord.toUpperCase();
     const newEvaluation = Array(NUMBER_OF_LETTERS_PER_GUESS).fill('');
-    
-    // 判定に使うため、正解の単語の文字を一時的な配列に入れる
     const targetLetterPool = targetUpper.split('');
-
-    // 【ステップ1】まず「緑」の判定を先に行う
     guessUpper.forEach((char, index) => {
       if (char === targetUpper[index]) {
-        newEvaluation[index] = 'bg-green-700'; // 緑に設定
-        targetLetterPool[index] = ''; // マッチした文字をプールから消費する
+        newEvaluation[index] = 'bg-green-700';
+        targetLetterPool[index] = '';
       }
     });
-
-    // 【ステップ2】次に「黄色」と「灰色」を判定する
     guessUpper.forEach((char, index) => {
-      // 既に緑の場合はスキップ
-      if (newEvaluation[index] === 'bg-green-700') {
-        return;
-      }
-
-      // プールに文字が存在するかチェック
+      if (newEvaluation[index] === 'bg-green-700') return;
       const yellowIndex = targetLetterPool.indexOf(char);
       if (yellowIndex !== -1) {
-        newEvaluation[index] = 'bg-yellow-500'; // 黄色に設定
-        targetLetterPool[yellowIndex] = ''; // マッチした文字をプールから消費する
+        newEvaluation[index] = 'bg-yellow-500';
+        targetLetterPool[yellowIndex] = '';
       } else {
-        newEvaluation[index] = 'bg-gray-700'; // 灰色に設定
+        newEvaluation[index] = 'bg-gray-700';
       }
     });
-
-    // --- ▲▲ 色判定ロジックの修正ここまで ▲▲ ---
-
-
-    // 判定後のState更新処理は変更なし
     setEvaluationStates(prev => {
       const newStates = [...prev];
       newStates[currentRowIndex] = newEvaluation;
       return newStates;
     });
-
     for (let i = 0; i < NUMBER_OF_LETTERS_PER_GUESS; i++) {
-      setTimeout(() => {
-        setFlipStates(prev => {
-          const newFlipStates = [...prev];
-          if (newFlipStates[currentRowIndex]) {
-            newFlipStates[currentRowIndex][i] = true;
-          }
-          return newFlipStates;
-        });
-      }, i * 150);
+      setTimeout(() => setFlipStates(prev => {
+        const newStates = [...prev];
+        if (newStates[currentRowIndex]) newStates[currentRowIndex][i] = true;
+        return newStates;
+      }), i * 150);
     }
-
     const totalAnimationTime = (NUMBER_OF_LETTERS_PER_GUESS - 1) * 150 + 600;
-
     setTimeout(() => {
-      // ...この後のキーボードの色更新やゲーム終了判定のロジックは変更ありません...
       const newKeyStates = { ...keyStates };
       newEvaluation.forEach((color, index) => {
         const char = currentGuess[index].toUpperCase();
@@ -145,43 +130,29 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
         }
       });
       setKeyStates(newKeyStates);
-
-      const yellowChars = newEvaluation.map((color, index) => {
-        if (color === 'bg-yellow-500') {
-          return currentGuess[index].toUpperCase();
-        }
-        return null;
-      }).filter((char): char is string => char !== null);
+      const yellowChars = newEvaluation.map((color, index) => color === 'bg-yellow-500' ? currentGuess[index].toUpperCase() : null).filter((char): char is string => char !== null);
       onYellowLettersChange(yellowChars);
-
-      const greenChars = newEvaluation.map((color, index) => {
-        if (color === 'bg-green-700') {
-          return { char: currentGuess[index].toUpperCase(), index };
-        }
-        return null;
-      }).filter((item): item is {char: string, index: number} => item !== null);
+      const greenChars = newEvaluation.map((color, index) => color === 'bg-green-700' ? { char: currentGuess[index].toUpperCase(), index } : null).filter((item): item is {char: string, index: number} => item !== null);
       onGreenLettersChange(greenChars);
-
       if (currentGuessString.toUpperCase() === targetWord.toUpperCase()) {
         setIsSuccess(true);
-
         setIsGameOver(true);
       } else if (currentRowIndex + 1 >= NUMBER_OF_GUESS_ROWS) {
         setIsSuccess(false);
         setIsGameOver(true);
       }
-
-      setGuesses(prevGuesses => {
-        const newGuesses = [...prevGuesses];
+      setGuesses(prev => {
+        const newGuesses = [...prev];
         newGuesses[currentRowIndex] = currentGuessString;
         return newGuesses;
       });
-      setCurrentRowIndex(prevIndex => prevIndex + 1);
+      setCurrentRowIndex(prev => prev + 1);
       setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
     }, totalAnimationTime);
   };
+  
+  // ...（他の関数やJSXは変更なし）
   const handleButtonClick = (buttonLabel: string) => {
-    // ...関数の内容は変更なし
     if (!targetWord || isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) return;
     const currentLettersCount = currentGuess.filter(char => char !== '').length;
     if (currentLettersCount >= NUMBER_OF_LETTERS_PER_GUESS && buttonLabel !== 'Backspace') return;
@@ -218,6 +189,7 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
     setTargetWord(getRandomWord());
   };
 
+
   // 2. このヘルパー関数は不要なので削除
   /*
   const getTranslatedWord = (word: string): string => {
@@ -229,6 +201,7 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
   return (
     <div className="p-5 border border-gray-300 rounded-lg max-w-4xl mx-auto text-center my-5">
       <h2 className="text-2xl font-bold mb-4">5文字を当てようゲーム</h2>
+
 
       <div className="space-y-3 mb-5">
         {Array.from({ length: NUMBER_OF_GUESS_ROWS }).map((_, rowIndex) => (
@@ -251,10 +224,7 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
           </div>
         ))}
       </div>
-
       {gameMessage && <div className="mt-4 p-3 bg-yellow-500 text-black rounded-md font-bold text-lg">{gameMessage}</div>}
-      
-      {/* ボタン部分も変更なし */}
       <div className="flex justify-center gap-4 mt-5 mb-8">
         <AlphabetButton label="Enter" onButtonClick={handleEnterClick} />
         <AlphabetButton label="Reset" onButtonClick={handleResetClick} />
@@ -267,18 +237,4 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange }: 
       </div>
 
 
-      {isGameOver && (
-        <ResultModal
-          isSuccess={isSuccess}
-          targetWord={targetWord}
-          // 3. WORD_LISTから直接翻訳を探すように変更
-          translatedWord={
-            WORD_LIST.find(item => item.originalWord.toUpperCase() === targetWord)?.translatedWord || '翻訳が見つかりません'
-          }
-          onReset={handleResetClick}
-        />
 
-      )}
-    </div>
-  );
-}
