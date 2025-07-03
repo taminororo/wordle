@@ -1,12 +1,10 @@
 'use client';
 
-// 1. useMemo を React からインポート
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import WORD_LIST from '../data/combined_word_list.json';
 import AlphabetButton from './AlphabetButtons';
-import ResultModal from './ResultModal'; 
+import ResultModal from './ResultModal';
 
-// ...（他の定義は変更なし）
 const NUMBER_OF_LETTERS_PER_GUESS = 5;
 const NUMBER_OF_GUESS_ROWS = 5;
 
@@ -19,14 +17,12 @@ const getRandomWord = (): string => {
 
 interface WordleProps {
   onYellowLettersChange: (letters: string[]) => void;
-  onGreenLettersChange: (letters: {char: string, index: number}[]) => void;
-  streakCount: number; // ★ 親からstreakCountを受け取る
-  onGameEnd: (isSuccess: boolean) => void; // ★ ゲーム終了を親に通知する
+  onGreenLettersChange: (letters: { char: string, index: number }[]) => void;
+  streakCount: number;
+  onGameEnd: (isSuccess: boolean) => void;
 }
 
-
 export default function Wordle({ onYellowLettersChange, onGreenLettersChange, streakCount, onGameEnd }: WordleProps) {
-  // ...（Stateの定義は変更なし）
   const [guesses, setGuesses] = useState<string[]>(Array(NUMBER_OF_GUESS_ROWS).fill(''));
   const [currentGuess, setCurrentGuess] = useState<string[]>(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
   const [currentRowIndex, setCurrentRowIndex] = useState(0);
@@ -34,19 +30,8 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange, st
   const [isGameOver, setIsGameOver] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const [keyStates, setKeyStates] = useState<{ [key: string]: string }>({});
 
-
-  // --- ★追加: ダイアログの状態を管理
-  const [dialog, setDialog] = useState({ isOpen: false, message: '' });
-
-  // --- ★追加: 連続正解数とゲーム状態を管理
-  const [winStreak, setWinStreak] = useState(0);
-  const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost'>('playing');
-
-  // --- ★追加: キーボードの各キーの色を管理するState
-
-
-  const [keyStates, setKeyStates] = useState<{[key: string]: string}>({});
   const [flipStates, setFlipStates] = useState<boolean[][]>(
     Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(false))
   );
@@ -57,12 +42,9 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange, st
     Array(NUMBER_OF_GUESS_ROWS).fill(null).map(() => Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''))
   );
 
-
-  // 2. パフォーマンス向上のため、検索用の単語セットを最初に一度だけ作成
   const validWordSet = useMemo(() => {
     return new Set(WORD_LIST.map(item => item.originalWord.toLowerCase()));
   }, []);
-
 
   const handleButtonClick = useCallback((buttonLabel: string) => {
     if (!targetWord || isGameOver || currentRowIndex >= NUMBER_OF_GUESS_ROWS) return;
@@ -97,7 +79,7 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange, st
       setGameMessage('その単語はリストにありません');
       return;
     }
-    
+
     const guessUpper = currentGuess.map(c => c.toUpperCase());
     const targetUpper = targetWord.toUpperCase();
     const newEvaluation = Array(NUMBER_OF_LETTERS_PER_GUESS).fill('');
@@ -147,16 +129,16 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange, st
       setKeyStates(newKeyStates);
       const yellowChars = newEvaluation.map((color, index) => color === 'bg-yellow-500' ? currentGuess[index].toUpperCase() : null).filter((char): char is string => char !== null);
       onYellowLettersChange(yellowChars);
-      const greenChars = newEvaluation.map((color, index) => color === 'bg-green-700' ? { char: currentGuess[index].toUpperCase(), index } : null).filter((item): item is {char: string, index: number} => item !== null);
+      const greenChars = newEvaluation.map((color, index) => color === 'bg-green-700' ? { char: currentGuess[index].toUpperCase(), index } : null).filter((item): item is { char: string, index: number } => item !== null);
       onGreenLettersChange(greenChars);
       if (currentGuessString.toUpperCase() === targetWord.toUpperCase()) {
         setIsSuccess(true);
         setIsGameOver(true);
-        onGameEnd(true); // ★ 親に成功を通知
+        onGameEnd(true);
       } else if (currentRowIndex + 1 >= NUMBER_OF_GUESS_ROWS) {
         setIsSuccess(false);
         setIsGameOver(true);
-        onGameEnd(false); // ★ 親に失敗を通知
+        onGameEnd(false);
       }
       setGuesses(prev => {
         const newGuesses = [...prev];
@@ -167,7 +149,8 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange, st
       setCurrentGuess(Array(NUMBER_OF_LETTERS_PER_GUESS).fill(''));
     }, totalAnimationTime);
 
-  }, [currentGuess, currentRowIndex, isGameOver, keyStates, onGreenLettersChange, onYellowLettersChange, targetWord, validWordSet]);
+  }, [currentGuess, currentRowIndex, isGameOver, keyStates, onGreenLettersChange, onYellowLettersChange, targetWord, validWordSet, onGameEnd]);
+
 
   const handleResetClick = () => {
     setGuesses(Array(NUMBER_OF_GUESS_ROWS).fill(''));
@@ -206,7 +189,6 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange, st
 
   return (
     <div className="p-5 border border-gray-300 rounded-lg max-w-4xl mx-auto text-center my-5">
-      {/* ★ ヘッダー部分をFlexboxでレイアウト */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">5文字を当てようゲーム</h2>
         <div className="text-lg font-semibold">
@@ -223,6 +205,7 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange, st
               else if (rowIndex === currentRowIndex && char !== '') tileStateClass = 'bg-blue-700';
               else tileStateClass = 'bg-gray-700';
               const commonTileClasses = "border border-blue-500 p-4 min-h-16 w-16 rounded-md flex items-center justify-center text-xl font-bold break-words";
+
               return (
                 <div key={charIndex} className={`flip-card ${flipStates[rowIndex][charIndex] ? 'flipped' : ''}`}>
                   <div className="flip-card-inner">
@@ -235,17 +218,39 @@ export default function Wordle({ onYellowLettersChange, onGreenLettersChange, st
           </div>
         ))}
       </div>
+
       {gameMessage && <div className="mt-4 p-3 bg-yellow-500 text-black rounded-md font-bold text-lg">{gameMessage}</div>}
+
       <div className="flex justify-center gap-4 mt-5 mb-8">
         <AlphabetButton label="Enter" onButtonClick={handleEnterClick} disabled={true} />
-        <AlphabetButton label="Reset" onButtonClick={handleResetClick} />
+        <AlphabetButton label="Reset" onButtonClick={handleResetClick} disabled={true} />
         <AlphabetButton label="Backspace" onButtonClick={() => handleButtonClick('Backspace')} disabled={true} />
       </div>
+
       <div className="flex justify-center flex-col items-center space-y-2">
-        <div className="flex justify-center gap-2 flex-wrap">{'QWERTYUIOP'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} disabled={true} />))}</div>
-        <div className="flex justify-center gap-2 flex-wrap">{'ASDFGHJKL'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} disabled={true} />))}</div>
-        <div className="flex justify-center gap-2 flex-wrap">{'ZXCVBNM'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} disabled={true} />))}</div>
+        <div className="flex justify-center gap-2 flex-wrap">
+          {'QWERTYUIOP'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} disabled={true} />))}
+        </div>
+        <div className="flex justify-center gap-2 flex-wrap">
+          {'ASDFGHJKL'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} disabled={true} />))}
+        </div>
+        <div className="flex justify-center gap-2 flex-wrap">
+          {'ZXCVBNM'.split('').map(label => (<AlphabetButton key={label} label={label} onButtonClick={handleButtonClick} colorClass={keyStates[label]} disabled={true} />))}
+        </div>
       </div>
 
 
+      {isGameOver && (
+        <ResultModal
+          isSuccess={isSuccess}
+          targetWord={targetWord}
+          translatedWord={
+            WORD_LIST.find(item => item.originalWord.toUpperCase() === targetWord)?.translatedWord || '翻訳が見つかりません'
+          }
+          onReset={handleResetClick}
+        />
+      )}
+    </div>
+  );
+}
 
