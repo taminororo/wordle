@@ -2,8 +2,8 @@
 
 import { useState } from 'react'; // ★useStateをインポート
 import { useEffect } from 'react'; // ★useEffectをインポート
-import Wordle from '../components/Wordle';
-import BackgroundCascade from '../components/BackgroundCasacde';
+import Wordle from '../components/game/GameBoard';
+import BackgroundCascade from '@/components/game/BackgroundCasacde';
 
 export default function MyApp() {
   const [yellowLetters, setYellowLetters] = useState<string[]>([]);

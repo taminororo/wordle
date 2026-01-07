@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import WORD_LIST from '../data/combined_word_list.json';
-import AlphabetButton from './AlphabetButtons';
+import WORD_LIST from '../../data/combined_word_list.json';
+import AlphabetButton from '../ui/AlphabetButtons';
 import ResultModal from './ResultModal';
 
 const NUMBER_OF_LETTERS_PER_GUESS = 5;
