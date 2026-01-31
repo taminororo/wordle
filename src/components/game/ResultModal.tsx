@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import AlphabetButton from './AlphabetButtons';
+import AlphabetButton from '../ui/AlphabetButtons';
 
 interface ResultModalProps {
   isSuccess: boolean;
