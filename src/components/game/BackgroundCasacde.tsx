@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 // 1. 'with { type: 'json' }' を削除
-import WORD_LIST from '../data/combined_word_list.json';
+import WORD_LIST from '@/data/combined_word_list.json'
 //import translations from '../data/translated_words.json'; // ★日本語訳をインポート
 
 // BackgroundCascade.tsx (抜粋)
